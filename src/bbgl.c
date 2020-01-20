@@ -69,8 +69,14 @@ void bbgl_loop() {
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.0, 0.0, 0.0, 0.0);
+        
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         scene_render(scene);
+        
+        glDisable(GL_BLEND);
+
         gui_render();
         
         glfwSwapBuffers(win);
