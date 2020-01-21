@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "obj.h"
 #include "shader.h"
+#include "interactive.h"
 
 shader_p shader;
 
@@ -53,10 +54,11 @@ scene_render(scene_p scene) {
 
     static int n = 0;
     n++;
+
     float x = 10.0*sin(n/300.0);
     float y = 10.0*sin(n/200.0);
     float z = 10.0*cos(n/300.0);
-
+    
     mat4x4_look_at(scene->v, 
     	(vec3){  x,  y,  z}, 
     	(vec3){0.0,0.0,0.0},

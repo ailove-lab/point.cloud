@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -44,7 +43,9 @@ void bbgl_init() {
     glfwMakeContextCurrent(win);
     gl3wInit();
     glfwGetWindowSize(win, &width, &height);
-   
+
+    interactive_init(win);
+
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     // glewExperimental = 1;
@@ -70,13 +71,13 @@ void bbgl_loop() {
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.0, 0.0, 0.0, 0.0);
         
+        //SCENE
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         scene_render(scene);
-        
         glDisable(GL_BLEND);
-
+        
+        // GUI
         gui_render();
         
         glfwSwapBuffers(win);
