@@ -2,6 +2,7 @@
 #include "obj.h"
 #include "shader.h"
 #include "interactive.h"
+#include "gui.h"
 
 shader_p shader;
 
@@ -55,12 +56,12 @@ scene_render(scene_p scene) {
     static int n = 0;
     n++;
 
-    float x = 10.0*sin(n/300.0);
-    float y = 10.0*sin(n/200.0);
-    float z = 10.0*cos(n/300.0);
+    float x = gui_camera_r*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
+    float z = gui_camera_r*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
+    float y = gui_camera_r*cos(gui_camera_rx/57.3);
     
     mat4x4_look_at(scene->v, 
-    	(vec3){  x,  y,  z}, 
+    	(vec3){x,y,z}, 
     	(vec3){0.0,0.0,0.0},
     	(vec3){0.0,1.0,0.0});
     shader_start(shader);
