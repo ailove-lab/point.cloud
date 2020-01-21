@@ -3,7 +3,7 @@ Clusters visualisation
 
 ![](screen.png)
 
-Visualization of large datasets obtained by methods of lowering the dimension, for example, such as UMAP, TSNE.
+Realtime visualization of large datasets obtained by methods of lowering the dimension, for example, such as UMAP, TSNE.
 
 Dependencies
 ------------
