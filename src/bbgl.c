@@ -44,8 +44,6 @@ void bbgl_init() {
     gl3wInit();
     glfwGetWindowSize(win, &width, &height);
 
-    interactive_init(win);
-
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     // glewExperimental = 1;
@@ -55,7 +53,9 @@ void bbgl_init() {
     // }
     
     scene = scene_ctor();
+    
     gui_init(win);
+    interactive_init(win);
 }
 
 void bbgl_loop() {
@@ -63,6 +63,7 @@ void bbgl_loop() {
     while (!glfwWindowShouldClose(win)) {
         /* Input */
         glfwPollEvents();
+        
         gui_update();
 
         /* Draw */

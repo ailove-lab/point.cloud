@@ -59,7 +59,6 @@ scene_render(scene_p scene) {
     float x = gui_camera_r*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
     float z = gui_camera_r*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
     float y = gui_camera_r*cos(gui_camera_rx/57.3);
-    
     mat4x4_look_at(scene->v, 
     	(vec3){x,y,z}, 
     	(vec3){0.0,0.0,0.0},
