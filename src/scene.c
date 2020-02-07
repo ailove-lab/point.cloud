@@ -52,12 +52,13 @@ static void print_mat(char* n, mat4x4 m){
 void 
 scene_render(scene_p scene) {
 
-    static int n = 0;
-    n++;
+    static float alpha = 0.0, betta=0.0;
+    alpha+=1.0;
+    betta+=0.1;
 
-    float x = 10.0*sin(n/300.0);
-    float y = 10.0*sin(n/200.0);
-    float z = 10.0*cos(n/300.0);
+    float x = 10.0*sin(alpha/57.0)*sin(betta/57.0);
+    float y = 10.0*sin(alpha/57.0)*cos(betta/57.0);
+    float z = 10.0*cos(alpha/57.0);
     
     mat4x4_look_at(scene->v, 
     	(vec3){  x,  y,  z}, 
