@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -22,12 +21,20 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL3_IMPLEMENTATION
+#define NK_GLFW_GL3_MOUSE_GRABBING
 
 #include <nuklear.h>
 #include <nuklear_glfw_gl3.h>
 
+#include "gui.h"
+
 #define MAX_VERTEX_BUFFER  512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
+
+float gui_camera_r  = 10.0;
+float gui_camera_rx = 30.0;
+float gui_camera_ry = 30.0;
+
 
 struct nk_context *ctx;
 struct nk_colorf bg;
@@ -52,14 +59,18 @@ void gui_init(GLFWwindow* win) {
 void gui_update() {
 
     nk_glfw3_new_frame();
+    
     /* GUI */
     if (nk_begin(ctx, "Ailove.Lab", nk_rect(50, 50, 230, 250),
         NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
         NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE)) {
-        enum {EASY, HARD};
-        static int op = EASY;
-        static int property = 20;
+
+        nk_layout_row_dynamic(ctx, 25, 1);
+        nk_property_float(ctx, "Radius",     0.01, &gui_camera_r , 100.0, 0.1, 0.2);
+        nk_property_float(ctx, "Rotation x", 0.01, &gui_camera_rx, 180.0, 0.1, 0.2);
+        nk_property_float(ctx, "Rotation y", 0.00, &gui_camera_ry, 360.0, 0.1, 0.2);
         
+        /*
         nk_layout_row_static(ctx, 30, 80, 1);
         if (nk_button_label(ctx, "button"))
             fprintf(stdout, "button pressed\n");
@@ -84,6 +95,7 @@ void gui_update() {
             bg.a = nk_propertyf(ctx, "#A:", 0, bg.a, 1.0f, 0.01f,0.005f);
             nk_combo_end(ctx);
         }
+        */
     }
     nk_end(ctx);
 }
@@ -102,5 +114,3 @@ void gui_render(){
 void gui_terminate(){
     nk_glfw3_shutdown();
 };
-
-

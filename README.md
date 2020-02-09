@@ -1,7 +1,9 @@
-Bare Bone GL 3.3 app on C
-=========================
+Clusters visualisation
+======================
 
 ![](screen.png)
+
+Realtime visualization of large datasets obtained by methods of lowering the dimension, for example, such as UMAP, TSNE.
 
 Dependencies
 ------------
