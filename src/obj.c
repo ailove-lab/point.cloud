@@ -15,6 +15,8 @@ obj_ctor() {
 	return obj;
 }
 
+static int row_width;
+
 void
 obj_dtor(obj_p obj) {
     glDeleteBuffers(1, &obj->vbo);
@@ -27,9 +29,8 @@ obj_plane() {
 	
     obj_p obj = obj_ctor();
 
-    // Loading data to mem
-    const int point_size = 4;
-    csv_t* csv = csv_load("clusters.4d.test.csv");
+    csv_t* csv = csv_load("_clusters.4d.csv");
+    int row_width = csv->cols * sizeof(float);
     
     obj->size = csv->rows;
 
@@ -40,11 +41,14 @@ obj_plane() {
         // allocate buffer objects for coordinates, colors and uvs
         glGenBuffers(1, &obj->vbo);
         glBindBuffer(GL_ARRAY_BUFFER, obj->vbo);
+        glBufferData(GL_ARRAY_BUFFER, csv->rows * row_width, csv->data, GL_STATIC_DRAW);       
+        
+        glEnableVertexAttribArray(0);        
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, row_width, (GLvoid*) (sizeof(float)*0));
+        
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, row_width, (GLvoid*) (sizeof(float)*4));
 
-        // 1 - first xyz column
-        glBufferData(GL_ARRAY_BUFFER, csv->rows * csv->cols * sizeof(float), csv->data, GL_STATIC_DRAW);       
-        glVertexAttribPointer(0, point_size, GL_FLOAT, GL_FALSE, csv->cols * sizeof(float), (GLvoid*) (sizeof(float)*0)); 
-        glEnableVertexAttribArray(0);
 
         /*
         // example   
@@ -86,7 +90,22 @@ obj_plane() {
 
 void 
 obj_render(obj_p obj) {
+
+    // static int i = 0;
+    // static int j = 0;
+    // i++;
+
     glBindVertexArray(obj->vao);
+
+    // if (i%100==0) {
+    //     glBindBuffer(GL_ARRAY_BUFFER, obj->vbo);
+    //     glEnableVertexAttribArray(1);
+    //     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, row_width, (GLvoid*) (sizeof(float)*4+j%2));
+    //     j++;
+    //     printf("%d\n", j%2);
+    //     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // }
+    
     //glEnableVertexAttribArray(0);
     //glEnableVertexAttribArray(1);
     glDrawArrays(GL_POINTS, 0, obj->size);

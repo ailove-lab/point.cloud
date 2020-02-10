@@ -42,8 +42,8 @@ csv_t* csv_load(char* filename) {
     parse_header(csv, line);
     
     csv->data = calloc((csv->rows+1) * csv->cols, sizeof(float));
-    csv->min = calloc(csv->cols, sizeof(float));
-    csv->max = calloc(csv->cols, sizeof(float));
+    csv->min  = calloc(csv->cols, sizeof(float));
+    csv->max  = calloc(csv->cols, sizeof(float));
     size_t row = 0;
     while(fgets(line, LINE_SIZE, fp)) {
         char* tmp = line;

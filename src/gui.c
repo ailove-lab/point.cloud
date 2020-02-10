@@ -57,7 +57,7 @@ void gui_init(GLFWwindow* win) {
 }
 
 void gui_update() {
-
+    static int category = 0;
     nk_glfw3_new_frame();
     
     /* GUI */
@@ -69,6 +69,7 @@ void gui_update() {
         nk_property_float(ctx, "Radius",     0.01, &gui_camera_r , 100.0, 0.1, 0.2);
         nk_property_float(ctx, "Rotation x", 0.01, &gui_camera_rx, 180.0, 0.1, 0.2);
         nk_property_float(ctx, "Rotation y", 0.00, &gui_camera_ry, 360.0, 0.1, 0.2);
+        nk_property_int(ctx, "Category", 0, &category, 10, 1, 1);
         
         /*
         nk_layout_row_static(ctx, 30, 80, 1);

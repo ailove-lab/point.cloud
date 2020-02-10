@@ -2,6 +2,8 @@
 
 uniform mat4 mvp;
 layout (location = 0) in vec4 pos;
+layout (location = 1) in float cat;
+
 out vec4 out_col;
 
 // All components are in the range [0…1], including hue.
@@ -14,10 +16,11 @@ vec3 hsv2rgb(vec3 c) {
 
 void main() {
     
-    if(pos.w<0.0) {
+    int i = 1;
+    if(cat<0.0) {
         out_col = vec4(0.2,0.2,0.2,0.2);
     } else {
-        out_col = vec4(hsv2rgb(vec3(pos.w/150.0,0.75,1.0)),0.5);
+        out_col = vec4(hsv2rgb(vec3(cat/150.0,0.75,1.0)),0.5);
     }
 
     gl_Position = mvp*vec4(pos.xyz, 1.0);
