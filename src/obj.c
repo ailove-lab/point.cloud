@@ -29,7 +29,7 @@ obj_plane() {
 
     // Loading data to mem
     const int point_size = 4;
-    csv_t* csv = csv_load("clusters.3d.csv");
+    csv_t* csv = csv_load("clusters.4d.test.csv");
     
     obj->size = csv->rows;
 
@@ -43,7 +43,7 @@ obj_plane() {
 
         // 1 - first xyz column
         glBufferData(GL_ARRAY_BUFFER, csv->rows * csv->cols * sizeof(float), csv->data, GL_STATIC_DRAW);       
-        glVertexAttribPointer(0, point_size, GL_FLOAT, GL_FALSE, csv->cols * sizeof(float), (GLvoid*) (sizeof(float)*1)); 
+        glVertexAttribPointer(0, point_size, GL_FLOAT, GL_FALSE, csv->cols * sizeof(float), (GLvoid*) (sizeof(float)*0)); 
         glEnableVertexAttribArray(0);
 
         /*
