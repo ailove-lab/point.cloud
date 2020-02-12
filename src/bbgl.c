@@ -55,7 +55,7 @@ void bbgl_init() {
     scene = scene_ctor();
     
     gui_init(win);
-    // interactive_init(win);
+    interactive_init(win);
 }
 
 void bbgl_loop() {

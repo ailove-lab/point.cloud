@@ -82,6 +82,7 @@ scene_render(scene_p scene) {
         obj_p o = scene->objects.a[i];
         mat4x4 mvp;
         mat4x4_mul(mvp, scene->p, scene->v);
+
         // print_mat("p", scene->p);
         // print_mat("v", scene->v);
         // print_mat("m", o->m);
