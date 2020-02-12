@@ -50,6 +50,19 @@ static void print_mat(char* n, mat4x4 m){
 }
 */
 
+static inline void mat4x4_rotate_U(mat4x4 Q, mat4x4 M, float angle)
+{
+	float s = sinf(angle);
+	float c = cosf(angle);
+	mat4x4 R = {
+		{ 1.f, 0.f, 0.f, 0.f},
+		{ 0.f, 1.f, 0.f, 0.f},
+		{ 0.f, 0.f,   c,   s},
+		{ 0.f, 0.f,  -s,   c}
+	};
+	mat4x4_mul(Q, M, R);
+}
+
 void 
 scene_render(scene_p scene) {
 
@@ -76,7 +89,9 @@ scene_render(scene_p scene) {
         // print_mat("mvp", mvp);
         // printf("%d\n", shader->mvp); 
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) mvp);
-        glUniform1i(shader->cat_id,(const GLint) gui_cat_id);
+        glUniform1f(shader->min, (const GLfloat) gui_min);
+        glUniform1f(shader->max, (const GLfloat) gui_max);
+        
         obj_render(o);
     }
     shader_stop(shader);

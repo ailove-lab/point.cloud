@@ -1,9 +1,11 @@
 #version 330
 
 uniform mat4 mvp;
-uniform int cat_id;
+uniform float min;
+uniform float max;
+
 layout (location = 0) in vec4 pos;
-layout (location = 1) in float cat;
+layout (location = 1) in float data;
 
 out vec4 out_col;
 
@@ -16,12 +18,16 @@ vec3 hsv2rgb(vec3 c) {
 
 
 void main() {
+    vec4 a = vec4(1.0, 0.0, 0.0, 0.5);
+    vec4 b = vec4(0.0, 0.0, 1.0, 0.5);
     
     int i = 1;
-    if(cat<0.0) {
-        out_col = vec4(0.2,0.2,0.2,0.2);
+    if(data<min || data>max) {
+        out_col = vec4(0.2,0.2,0.2,0.1);
     } else {
-        out_col = vec4(hsv2rgb(vec3(cat/150.0,0.75,1.0)),0.5);
+        float k = (data-min)/(max-min);
+        // out_col = a*k + b*(1-k);
+        out_col = vec4(hsv2rgb(vec3(k, 1.0, 0.5)), 1.0);
     }
 
     gl_Position = mvp*vec4(pos.xyz, 1.0);

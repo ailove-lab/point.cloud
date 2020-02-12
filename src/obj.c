@@ -6,7 +6,7 @@
 #include <GL/gl3w.h>
 
 #include "obj.h"
-#include "csv.h"
+#include "data.h"
 #include "gui.h"
 
 obj_p
@@ -39,63 +39,35 @@ init_vao(obj_p obj, int col) {
     glBindVertexArray(0);
 }
 
+data_p data;
 
 obj_p 
 obj_cloud() {
 	
     obj_p obj = obj_ctor();
 
-    csv_p csv = csv_load("_clusters.4d.csv");
-    obj->cols = csv->cols;
-    obj->rows = csv->rows;
+    obj->cols = data->cols;
+    obj->rows = data->rows;
 
     glGenBuffers(1, &obj->vbo);
     glBindBuffer(GL_ARRAY_BUFFER, obj->vbo);
-    glBufferData(GL_ARRAY_BUFFER, obj->rows * obj->cols * sizeof(float), csv->data, GL_STATIC_DRAW);       
+    glBufferData(GL_ARRAY_BUFFER, obj->rows * obj->cols * sizeof(float), data->data, GL_STATIC_DRAW);       
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    csv_free(csv);
 
     glGenVertexArrays(1, &obj->vao);
-    init_vao(obj, 4);
-
-    /*
-    // example   
-    // interleaved data
-    GLfloat vertices[] = {
-        -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // 0
-        0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 1
-        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  // 2
-    };
-    GLuint VBOId;
-    glGenVertexArrays(1, &VAOId);
-    glBindVertexArray(VAOId);
-    glGenBuffers(1, &VBOId);
-    glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // specify position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    // specify color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT)));
-    glEnableVertexAttribArray(1);
-    // specify texture coordinate
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT)));
-    glEnableVertexAttribArray(2);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    */
-    
+    // init_vao(obj, gui_col_id);
+        
     return obj;
 }
 
 
 void 
 obj_render(obj_p obj) {
-    static int i=0;
-    static int j=0;
-    if(++i % 50 == 0) init_vao(obj, ++j%5);
+    static int col_id = -1;
+    if(gui_col_id!=col_id) {
+        col_id = gui_col_id;
+        init_vao(obj, col_id);
+    }
     
     glBindVertexArray(obj->vao);
     glDrawArrays(GL_POINTS, 0, obj->rows);
