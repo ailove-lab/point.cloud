@@ -34,7 +34,7 @@
 float gui_camera_r  = 10.0;
 float gui_camera_rx = 30.0;
 float gui_camera_ry = 30.0;
-
+int gui_cat_id = 0;
 
 struct nk_context *ctx;
 struct nk_colorf bg;

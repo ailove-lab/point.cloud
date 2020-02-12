@@ -5,8 +5,7 @@
 typedef struct {
 	GLuint prog;
 	GLuint mvp;
-	GLuint col;
-	GLuint pos;
+	GLuint cat_id;
 } shader_t;
 typedef shader_t* shader_p;
 

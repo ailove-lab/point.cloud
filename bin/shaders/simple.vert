@@ -1,6 +1,7 @@
 #version 330
 
 uniform mat4 mvp;
+uniform int cat_id;
 layout (location = 0) in vec4 pos;
 layout (location = 1) in float cat;
 

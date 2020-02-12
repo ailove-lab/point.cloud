@@ -47,24 +47,24 @@ csv_t* csv_load(char* filename) {
     size_t row = 0;
     while(fgets(line, LINE_SIZE, fp)) {
         char* tmp = line;
-        int j;
+        int col;
         char* t;
-        for(j=0, t=strtok(tmp,",");
+        for(col=0, t=strtok(tmp,",");
             t && *t; 
-            j++, t = strtok(NULL, ",\n")) {
+            col++, t = strtok(NULL, ",\n")) {
             float f = atof(t);
-            csv->data[row * csv->cols + j] = f;
-            // if (csv->min[j] > f) csv->min[j] = f;
-            // if (csv->max[j] < f) csv->max[j] = f;
+            csv->data[row * csv->cols + col] = f;
+            if (csv->min[col] > f) csv->min[col] = f;
+            if (csv->max[col] < f) csv->max[col] = f;
             // Break if data greater than header
-            if(j>=csv->cols) break;
+            if(col>=csv->cols) break;
 	    }
         row++;
     }
     
     printf("loaded: %ld rows\n", row);
-    printf("csv->cols: %ld", csv->cols);
-    printf("csv->rows: %ld", csv->rows);
+    printf("csv->cols: %ld\n", csv->cols);
+    printf("csv->rows: %ld\n", csv->rows);
 
     fclose(fp);
     

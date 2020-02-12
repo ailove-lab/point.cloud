@@ -41,6 +41,8 @@ shader_ctor(char* shader_name) {
     glDeleteShader(frag_id);
     
     shader->mvp = glGetUniformLocation(shader->prog, "mvp");
+    shader->cat_id = glGetUniformLocation(shader->prog, "cat_id");
+    
     printf("mvp %d\n", shader->mvp);
     // shader->col = glGetUniformLocation(shader->prog, "col");
     // shader->pos = glGetAttribLocation (shader->prog, "pos");

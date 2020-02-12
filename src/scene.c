@@ -18,7 +18,7 @@ scene_ctor() {
     	(vec3){0.0,1.0,0.0});
 
     shader = shader_ctor("simple");
-    obj_p o = obj_plane();
+    obj_p o = obj_cloud();
     scene_add_obj(scene, o);
     
 	return scene;
@@ -76,7 +76,7 @@ scene_render(scene_p scene) {
         // print_mat("mvp", mvp);
         // printf("%d\n", shader->mvp); 
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) mvp);
-
+        glUniform1i(shader->cat_id,(const GLint) gui_cat_id);
         obj_render(o);
     }
     shader_stop(shader);

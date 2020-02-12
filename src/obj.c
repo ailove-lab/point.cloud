@@ -7,6 +7,7 @@
 
 #include "obj.h"
 #include "csv.h"
+#include "gui.h"
 
 obj_p
 obj_ctor() {
@@ -15,8 +16,6 @@ obj_ctor() {
 	return obj;
 }
 
-static int row_width;
-
 void
 obj_dtor(obj_p obj) {
     glDeleteBuffers(1, &obj->vbo);
@@ -24,92 +23,81 @@ obj_dtor(obj_p obj) {
 	free(obj);
 }
 
+
+static void 
+init_vao(obj_p obj, int col) {
+    // bind vao & vbo
+    glBindVertexArray(obj->vao);
+    glBindBuffer(GL_ARRAY_BUFFER, obj->vbo);
+    // map coordinates
+    glEnableVertexAttribArray(0);        
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, obj->cols * sizeof(float), (GLvoid*) (sizeof(float)*0));
+    // map data col
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, obj->cols * sizeof(float), (GLvoid*) (sizeof(float)*col));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+
 obj_p 
-obj_plane() {
+obj_cloud() {
 	
     obj_p obj = obj_ctor();
 
-    csv_t* csv = csv_load("_clusters.4d.csv");
-    int row_width = csv->cols * sizeof(float);
-    
-    obj->size = csv->rows;
+    csv_p csv = csv_load("_clusters.4d.csv");
+    obj->cols = csv->cols;
+    obj->rows = csv->rows;
 
-    // upload data to gpu mem
+    glGenBuffers(1, &obj->vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, obj->vbo);
+    glBufferData(GL_ARRAY_BUFFER, obj->rows * obj->cols * sizeof(float), csv->data, GL_STATIC_DRAW);       
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    csv_free(csv);
+
     glGenVertexArrays(1, &obj->vao);
-    glBindVertexArray(obj->vao);
-    {
-        // allocate buffer objects for coordinates, colors and uvs
-        glGenBuffers(1, &obj->vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, obj->vbo);
-        glBufferData(GL_ARRAY_BUFFER, csv->rows * row_width, csv->data, GL_STATIC_DRAW);       
-        
-        glEnableVertexAttribArray(0);        
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, row_width, (GLvoid*) (sizeof(float)*0));
-        
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, row_width, (GLvoid*) (sizeof(float)*4));
+    init_vao(obj, 4);
 
+    /*
+    // example   
+    // interleaved data
+    GLfloat vertices[] = {
+        -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // 0
+        0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 1
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  // 2
+    };
+    GLuint VBOId;
+    glGenVertexArrays(1, &VAOId);
+    glBindVertexArray(VAOId);
+    glGenBuffers(1, &VBOId);
+    glBindBuffer(GL_ARRAY_BUFFER, VBOId);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // specify position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    // specify color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT)));
+    glEnableVertexAttribArray(1);
+    // specify texture coordinate
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT)));
+    glEnableVertexAttribArray(2);
 
-        /*
-        // example   
-        // interleaved data
-        GLfloat vertices[] = {
-            -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // 0
-            0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // 1
-            0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  // 2
-        };
-        GLuint VBOId;
-        glGenVertexArrays(1, &VAOId);
-        glBindVertexArray(VAOId);
-        glGenBuffers(1, &VBOId);
-        glBindBuffer(GL_ARRAY_BUFFER, VBOId);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        // specify position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)0);
-        glEnableVertexAttribArray(0);
-        // specify color attribute
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT)));
-        glEnableVertexAttribArray(1);
-        // specify texture coordinate
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT)));
-        glEnableVertexAttribArray(2);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        */
-    }
-    // unbind vbo & vao
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    */
     
-    // free mem
-    free(csv);
-
     return obj;
 }
 
+
 void 
 obj_render(obj_p obj) {
-
-    // static int i = 0;
-    // static int j = 0;
-    // i++;
-
-    glBindVertexArray(obj->vao);
-
-    // if (i%100==0) {
-    //     glBindBuffer(GL_ARRAY_BUFFER, obj->vbo);
-    //     glEnableVertexAttribArray(1);
-    //     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, row_width, (GLvoid*) (sizeof(float)*4+j%2));
-    //     j++;
-    //     printf("%d\n", j%2);
-    //     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // }
+    static int i=0;
+    static int j=0;
+    if(++i % 50 == 0) init_vao(obj, ++j%5);
     
-    //glEnableVertexAttribArray(0);
-    //glEnableVertexAttribArray(1);
-    glDrawArrays(GL_POINTS, 0, obj->size);
-    //glDisableVertexAttribArray(1); 
-    //glDisableVertexAttribArray(0);
+    glBindVertexArray(obj->vao);
+    glDrawArrays(GL_POINTS, 0, obj->rows);
     glBindVertexArray(0);
 }
