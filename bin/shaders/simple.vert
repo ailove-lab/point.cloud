@@ -30,7 +30,7 @@ void main() {
     } else {
         float k = (data-min)/(max-min);
         // out_col = a*k + b*(1-k);
-        out_col = vec4(hsv2rgb(vec3(k, 1.0, 0.5)), alpha_2);
+        out_col = vec4(hsv2rgb(vec3(k*0.75, 1.0, 1.0)), alpha_2);
     }
 
     gl_Position = mvp*vec4(pos.xyz, 1.0);

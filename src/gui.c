@@ -65,16 +65,18 @@ void gui_update() {
     char* col_name = data->header[gui_col_id]; 
     igText(data->header[gui_col_id]);
     igSliderScalar("min",ImGuiDataType_Float, &gui_min, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
+    if(gui_max<gui_min) gui_max = gui_min;
     igSliderScalar("max",ImGuiDataType_Float, &gui_max, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
+    if(gui_min>gui_max) gui_min = gui_max;
     float alpha_slider_min = 0.0;
     float alpha_slider_max = 1.0;
     igSliderScalar("alpha 1",ImGuiDataType_Float, &gui_alpha_1, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
     igSliderScalar("alpha 2",ImGuiDataType_Float, &gui_alpha_2, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
     int min = 0; int max = data->cols-1;
-    bool gui_col_changed = igSliderScalar("col id", ImGuiDataType_U32, &gui_col_id, &min, &max,  "%u", 1.f);
-    gui_col_changed = gui_col_changed || igListBoxStr_arr(col_name, &gui_col_id, data->header, data->cols, 10);
+    bool gui_col_changed = igSliderScalar("col #", ImGuiDataType_U32, &gui_col_id, &min, &max,  "%u", 1.f);
+    gui_col_changed = gui_col_changed || igListBoxStr_arr("col", &gui_col_id, data->header, data->cols, 10);
     if(gui_col_changed) {
-        gui_min = data->min[gui_col_id];
+        gui_min = data->min[gui_col_id] + (data->max[gui_col_id]-data->min[gui_col_id])*0.01;
         gui_max = data->max[gui_col_id];
     };
     igEnd();
