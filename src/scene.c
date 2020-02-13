@@ -92,6 +92,9 @@ scene_render(scene_p scene) {
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) mvp);
         glUniform1f(shader->min, (const GLfloat) gui_min);
         glUniform1f(shader->max, (const GLfloat) gui_max);
+        glUniform1f(shader->alpha_1, (const GLfloat) gui_alpha_1);
+        glUniform1f(shader->alpha_2, (const GLfloat) gui_alpha_2);
+    
         
         obj_render(o);
     }

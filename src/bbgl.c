@@ -39,7 +39,7 @@ void bbgl_init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "BBGL3", NULL, NULL);
+    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Cluster cloud", NULL, NULL);
     glfwMakeContextCurrent(win);
     gl3wInit();
     glfwGetWindowSize(win, &width, &height);

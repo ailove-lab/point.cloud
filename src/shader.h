@@ -5,6 +5,8 @@
 typedef struct {
 	GLuint prog;
 	GLuint mvp;
+	GLuint alpha_1;
+	GLuint alpha_2;
 	GLuint min;
 	GLuint max;
 } shader_t;

@@ -25,6 +25,9 @@ float gui_camera_r  = 10.0;
 float gui_camera_rx = 30.0;
 float gui_camera_ry = 30.0;
 
+float gui_alpha_1 = 0.10;
+float gui_alpha_2 = 0.75;
+
 int gui_col_id = 0;
 float gui_min = 0;
 float gui_max = 600;
@@ -58,12 +61,18 @@ void gui_update() {
     ImGui_ImplGlfw_NewFrame();
     igNewFrame();
 
-    igBegin("Test", NULL, 0);
+    igBegin("Column", NULL, 0);
+    char* col_name = data->header[gui_col_id]; 
+    igText(data->header[gui_col_id]);
     igSliderScalar("min",ImGuiDataType_Float, &gui_min, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
     igSliderScalar("max",ImGuiDataType_Float, &gui_max, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
+    float alpha_slider_min = 0.0;
+    float alpha_slider_max = 1.0;
+    igSliderScalar("alpha 1",ImGuiDataType_Float, &gui_alpha_1, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
+    igSliderScalar("alpha 2",ImGuiDataType_Float, &gui_alpha_2, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
     int min = 0; int max = data->cols-1;
-    bool gui_col_changed = igSliderScalar("column",    ImGuiDataType_U32, &gui_col_id, &min, &max,  "%u", 1.f);
-    gui_col_changed = gui_col_changed || igListBoxStr_arr("column", &gui_col_id, data->header, data->cols, 5);
+    bool gui_col_changed = igSliderScalar("col id", ImGuiDataType_U32, &gui_col_id, &min, &max,  "%u", 1.f);
+    gui_col_changed = gui_col_changed || igListBoxStr_arr(col_name, &gui_col_id, data->header, data->cols, 10);
     if(gui_col_changed) {
         gui_min = data->min[gui_col_id];
         gui_max = data->max[gui_col_id];
@@ -71,7 +80,7 @@ void gui_update() {
     igEnd();
 
     igShowDemoWindow(NULL);
-
+    gui_focused = igIsWindowFocused(ImGuiFocusedFlags_AnyWindow);
 }
 
 void gui_render(){

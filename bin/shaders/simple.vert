@@ -3,6 +3,9 @@
 uniform mat4 mvp;
 uniform float min;
 uniform float max;
+uniform float alpha_1;
+uniform float alpha_2;
+
 
 layout (location = 0) in vec4 pos;
 layout (location = 1) in float data;
@@ -23,11 +26,11 @@ void main() {
     
     int i = 1;
     if(data<min || data>max) {
-        out_col = vec4(0.2,0.2,0.2,0.1);
+        out_col = vec4(0.2,0.2,0.2,alpha_1);
     } else {
         float k = (data-min)/(max-min);
         // out_col = a*k + b*(1-k);
-        out_col = vec4(hsv2rgb(vec3(k, 1.0, 0.5)), 1.0);
+        out_col = vec4(hsv2rgb(vec3(k, 1.0, 0.5)), alpha_2);
     }
 
     gl_Position = mvp*vec4(pos.xyz, 1.0);

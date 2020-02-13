@@ -43,8 +43,8 @@ shader_ctor(char* shader_name) {
     shader->mvp = glGetUniformLocation(shader->prog, "mvp");
     shader->min = glGetUniformLocation(shader->prog, "min");
     shader->max = glGetUniformLocation(shader->prog, "max");
-    
-    printf("mvp %d\n", shader->mvp);
+    shader->alpha_1= glGetUniformLocation(shader->prog, "alpha_1");
+    shader->alpha_2= glGetUniformLocation(shader->prog, "alpha_2");
     // shader->col = glGetUniformLocation(shader->prog, "col");
     // shader->pos = glGetAttribLocation (shader->prog, "pos");
 

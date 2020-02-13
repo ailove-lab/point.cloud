@@ -30,10 +30,9 @@ static void cursor_position_callback(
     
         static double old_xpos;
         static double old_ypos; 
-
         mouse_x = xpos;
         mouse_y = ypos;
-        if(glfwGetMouseButton(win,0) == GLFW_PRESS) {
+        if(!gui_focused && glfwGetMouseButton(win,0) == GLFW_PRESS) {
             gui_camera_ry -= (old_xpos-xpos)*0.1;
             gui_camera_rx += (old_ypos-ypos)*0.1;
         }
@@ -53,6 +52,7 @@ static void mouse_scroll_callback(
     GLFWwindow* win,
     double xoffset,
     double yoffset) {
-
-    gui_camera_r -= yoffset;
+    if(!gui_focused) {
+        gui_camera_r -= yoffset;
+    }
 }
