@@ -9,7 +9,7 @@ static void load_file( char*  filename,  char** buf);
 shader_p 
 shader_ctor(char* shader_name) {
     
-    shader_p shader = calloc(1, sizeof(shader));
+    shader_p shader = calloc(1, sizeof(shader_t));
     
     char vert_name[256];
     char frag_name[256];
@@ -41,12 +41,11 @@ shader_ctor(char* shader_name) {
     glDeleteShader(frag_id);
     
     shader->mvp = glGetUniformLocation(shader->prog, "mvp");
+    shader->rot = glGetUniformLocation(shader->prog, "rot");
     shader->min = glGetUniformLocation(shader->prog, "min");
     shader->max = glGetUniformLocation(shader->prog, "max");
     shader->alpha_1= glGetUniformLocation(shader->prog, "alpha_1");
     shader->alpha_2= glGetUniformLocation(shader->prog, "alpha_2");
-    // shader->col = glGetUniformLocation(shader->prog, "col");
-    // shader->pos = glGetAttribLocation (shader->prog, "pos");
 
     // cleanup
     free(frag_text);

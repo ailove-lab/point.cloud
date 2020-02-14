@@ -19,18 +19,19 @@
 #include "gui.h"
 #include "data.h"
 
-
-
-float gui_camera_r  = 10.0;
+float gui_camera_zoom = 3.0;
 float gui_camera_rx = 30.0;
 float gui_camera_ry = 30.0;
+
+float gui_rot_u = 0.0;
+float gui_rot_v = 0.0;
 
 float gui_alpha_1 = 0.10;
 float gui_alpha_2 = 0.75;
 
 int gui_col_id = 0;
-float gui_min = 0;
-float gui_max = 600;
+float gui_min = 0.0;
+float gui_max = 600.0;
 
 struct ImGuiContext* ctx;
 struct ImGuiIO* io;

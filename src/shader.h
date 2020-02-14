@@ -5,6 +5,7 @@
 typedef struct {
 	GLuint prog;
 	GLuint mvp;
+	GLuint rot;
 	GLuint alpha_1;
 	GLuint alpha_2;
 	GLuint min;

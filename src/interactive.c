@@ -28,16 +28,21 @@ static void cursor_position_callback(
     double xpos, 
     double ypos) {
     
-        static double old_xpos;
-        static double old_ypos; 
-        mouse_x = xpos;
-        mouse_y = ypos;
-        if(!gui_focused && glfwGetMouseButton(win,0) == GLFW_PRESS) {
+    static double old_xpos;
+    static double old_ypos; 
+    mouse_x = xpos;
+    mouse_y = ypos;
+    if(!gui_focused){ 
+        if(glfwGetMouseButton(win,0) == GLFW_PRESS) {
+            gui_camera_rx -= (old_ypos-ypos)*0.1;
             gui_camera_ry -= (old_xpos-xpos)*0.1;
-            gui_camera_rx += (old_ypos-ypos)*0.1;
+        } else if(glfwGetMouseButton(win,1) == GLFW_PRESS) {
+            gui_rot_u -= (old_xpos-xpos)*0.01;
+            gui_rot_v -= (old_ypos-ypos)*0.01;
         }
-        old_xpos = xpos;
-        old_ypos = ypos;
+    }
+    old_xpos = xpos;
+    old_ypos = ypos;
 }
 
 
@@ -53,6 +58,6 @@ static void mouse_scroll_callback(
     double xoffset,
     double yoffset) {
     if(!gui_focused) {
-        gui_camera_r -= yoffset;
+        gui_camera_zoom -= yoffset;
     }
 }

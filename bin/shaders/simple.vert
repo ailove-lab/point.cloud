@@ -1,6 +1,7 @@
 #version 330
 
 uniform mat4 mvp;
+uniform mat4 rot;
 uniform float min;
 uniform float max;
 uniform float alpha_1;
@@ -33,5 +34,5 @@ void main() {
         out_col = vec4(hsv2rgb(vec3(k*0.75, 1.0, 1.0)), alpha_2);
     }
 
-    gl_Position = mvp*vec4(pos.xyz,1.0);
+    gl_Position = mvp*(vec4(0.0, 0.0, 0.0, 9.0)+rot*pos);
 }
