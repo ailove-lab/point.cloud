@@ -33,5 +33,5 @@ void main() {
         out_col = vec4(hsv2rgb(vec3(k*0.75, 1.0, 1.0)), alpha_2);
     }
 
-    gl_Position = mvp*vec4(pos.xyz, 1.0);
+    gl_Position = mvp*vec4(pos.xyz,1.0);
 }

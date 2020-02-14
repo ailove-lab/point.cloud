@@ -1,3 +1,4 @@
+#include "bbgl.h"
 #include "scene.h"
 #include "obj.h"
 #include "shader.h"
@@ -68,11 +69,14 @@ scene_render(scene_p scene) {
 
     static float alpha = 0.0, betta=0.0;
     alpha+=1.0;
-    betta+=0.1;
+    betta+=0.01;
 
     float x = gui_camera_r*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
     float z = gui_camera_r*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
     float y = gui_camera_r*cos(gui_camera_rx/57.3);
+
+    mat4x4_perspective(scene->p, 30, (float)width/(float)height, 0.0001, 1000.0);
+    
     mat4x4_look_at(scene->v, 
     	(vec3){x,y,z}, 
     	(vec3){0.0,0.0,0.0},
@@ -86,9 +90,13 @@ scene_render(scene_p scene) {
         // print_mat("p", scene->p);
         // print_mat("v", scene->v);
         // print_mat("m", o->m);
+        mat4x4 m;
+        mat4x4_identity(m);
+        // mat4x4_rotate_U(o->m,m,betta);
         mat4x4_mul(mvp, mvp, o->m);
         // print_mat("mvp", mvp);
-        // printf("%d\n", shader->mvp); 
+        // printf("%d\n", shader->mvp);
+
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) mvp);
         glUniform1f(shader->min, (const GLfloat) gui_min);
         glUniform1f(shader->max, (const GLfloat) gui_max);

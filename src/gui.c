@@ -43,7 +43,7 @@ void gui_init(GLFWwindow* win) {
     //io.Fonts->AddFontDefault();
     ImWchar* range = ImFontAtlas_GetGlyphRangesCyrillic(io->Fonts);
 
-    ImFontAtlas_AddFontFromFileTTF(io->Fonts, "./Roboto-Regular.ttf", 18.0f, NULL, range);
+    ImFontAtlas_AddFontFromFileTTF(io->Fonts, "./font.ttf", 16.f, NULL, range);
 
     const char* glsl_version = "#version 330 core";
     ImGui_ImplGlfw_InitForOpenGL(win, true);
