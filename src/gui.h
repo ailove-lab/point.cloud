@@ -1,6 +1,6 @@
 #pragma once
 
-float gui_camera_zoom;
+float gui_camera_radius;
 float gui_camera_rx;
 float gui_camera_ry;
 float gui_off_u;

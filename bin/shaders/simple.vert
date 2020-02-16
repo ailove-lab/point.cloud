@@ -38,5 +38,6 @@ void main() {
         out_col = vec4(hsv2rgb(vec3(k*0.75, 1.0, 1.0)), alpha_2);
     }
     gl_PointSize = point_size;
-    gl_Position = mvp*(vec4(0.0, 0.0, 0.0, off)+rot*pos);
+    // gl_Position = mvp*(vec4(0.0, 0.0, 0.0, off)+rot*pos);
+    gl_Position = mvp*vec4(pos.xyz, 1.0);
 }

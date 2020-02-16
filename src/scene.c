@@ -11,13 +11,9 @@ scene_p
 scene_ctor() {
     scene_p scene = calloc(1, sizeof(scene_t));
     kv_init(scene->objects);
-    
-    mat4x4_perspective(scene->p, 30, 1.0, 0.0001, 1000.0);
-    mat4x4_look_at(scene->v, 
-    	(vec3){1.0, 1.0, 1.0}, 
-    	(vec3){0.0, 0.0, 0.0},
-    	(vec3){0.0, 1.0, 0.0});
-
+    scene->fov = 30.0;
+    scene->f = 100.0;
+    scene->n = 0.001;
     shader = shader_ctor("simple");
     obj_p o = obj_cloud();
     scene_add_obj(scene, o);
@@ -40,56 +36,6 @@ scene_add_obj(scene_p scene, obj_p obj) {
     kv_push(obj_p, scene->objects, obj);
 }
 
-/*
-static void print_vec(vec4 v) {
-    for(int i=0;i<4;i++) printf("%f ",v[i]);
-    printf("\n");
-}
-static void print_mat(char* n, mat4x4 m){
-    printf("-%s-\n",n);
-    for(int i=0;i<4;i++) print_vec(m[i]);
-}
-*/
-
-static inline void mat4x4_rotate_U(mat4x4 Q, mat4x4 M, float angle)
-{
-	float s = sinf(angle);
-	float c = cosf(angle);
-	mat4x4 R = {
-		{ 1.f, 0.f, 0.f, 0.f},
-		{ 0.f, 1.f, 0.f, 0.f},
-		{ 0.f, 0.f,   c,   s},
-		{ 0.f, 0.f,  -s,   c}
-	};
-	mat4x4_mul(Q, M, R);
-}
-
-static inline void mat4x4_rotate_V(mat4x4 Q, mat4x4 M, float angle)
-{
-	float s = sinf(angle);
-	float c = cosf(angle);
-	mat4x4 R = {
-		{ 1.f, 0.f, 0.f, 0.f},
-		{ 0.f,   c, 0.f,   s},
-		{ 0.f, 0.f, 1.f, 0.f},
-		{ 0.f,  -s, 0.f,   c}
-	};
-	mat4x4_mul(Q, M, R);
-}
-
-static inline void mat4x4_rotate_W(mat4x4 Q, mat4x4 M, float angle)
-{
-	float s = sinf(angle);
-	float c = cosf(angle);
-	mat4x4 R = {
-		{   c, 0.f, 0.f,   s},
-		{ 0.f, 1.f, 0.f, 0.f},
-		{ 0.f, 0.f, 1.f, 0.f},
-		{  -s, 0.f, 0.f,   c}
-	};
-	mat4x4_mul(Q, M, R);
-}
-
 void 
 scene_render(scene_p scene) {
 
@@ -97,16 +43,16 @@ scene_render(scene_p scene) {
     alpha+=1.0;
     betta+=0.01;
 
-    float x = gui_camera_zoom*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
-    float z = gui_camera_zoom*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
-    float y = gui_camera_zoom*cos(gui_camera_rx/57.3);
+    float x = gui_camera_radius*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
+    float z = gui_camera_radius*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
+    float y = gui_camera_radius*cos(gui_camera_rx/57.3);
 
-    mat4x4_perspective(scene->p, 30, (float)width/(float)height, 0.0001, 1000.0);
-    
+    mat4x4_perspective(scene->p, scene->fov, ratio, scene->n, scene->f);
+    // mat4x4_perspective(scene->p, 30, 1.0, 0.0001, 1000.0);
     mat4x4_look_at(scene->v, 
-    	(vec3){  x,  y,  z}, 
-    	(vec3){0.0,0.0,0.0},
-    	(vec3){0.0,1.0,0.0});
+    	(vec3){  x,   y,   z}, 
+    	(vec3){0.0, 0.0, 0.0},
+    	(vec3){0.0, 1.0, 0.0});
 
     shader_start(shader);
     for(size_t i=0; i<scene->objects.n; i++) {
@@ -116,14 +62,10 @@ scene_render(scene_p scene) {
         mat4x4_mul(scene->mvp, scene->p, scene->v);
         mat4x4_identity(scene->rot);
         mat4x4_rotate_U(scene->rot, scene->rot, gui_rot_u);
-
         // mat4x4_rotate_V(rot, rot, gui_rot_v);
-        // mat4x4 m;
-        // mat4x4_identity(m);
-        // mat4x4_rotate_U(o->m,m,betta);
+        
         // mat4x4_mul(mvp, mvp, o->m);
         // print_mat("mvp", mvp);
-        // printf("%d\n", shader->mvp);
 
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) scene->mvp);
         glUniformMatrix4fv(shader->rot, 1, GL_FALSE, (const GLfloat*) scene->rot);

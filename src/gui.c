@@ -17,11 +17,12 @@
 #include <cimgui.h>
 // #include <imgui_impl_glfw.h>
 
+#include "bbgl.h"
 #include "gui.h"
 #include "data.h"
 #include "scene.h"
 
-float gui_camera_zoom = 3.0;
+float gui_camera_radius = 40.0;
 float gui_camera_rx = 30.0;
 float gui_camera_ry = 30.0;
 
@@ -35,7 +36,7 @@ float gui_alpha_2    = 0.75;
 
 int gui_col_id = 0;
 float gui_min = 0.0;
-float gui_max = 600.0;
+float gui_max = 50.0;
 
 struct ImGuiContext* ctx;
 struct ImGuiIO* io;
@@ -60,6 +61,8 @@ void gui_init(GLFWwindow* win) {
     
 }
 
+static w2s(vec4 r, mat4x4 mvp, vec4 p);
+
 data_p data;
 void gui_update(scene_t* scene) {
 
@@ -69,9 +72,8 @@ void gui_update(scene_t* scene) {
 
     float alpha_slider_min = 0.0;
     float alpha_slider_max = 1.0;
-    float point_size_min = 1.0;
-    float point_size_max = 9.0;
-
+    float point_size_min   = 1.0;
+    float point_size_max   = 9.0;
     igBegin("Column", NULL, 0);
     char* col_name = data->header[gui_col_id]; 
     igText(data->header[gui_col_id]);
@@ -91,30 +93,68 @@ void gui_update(scene_t* scene) {
         gui_max = data->max[gui_col_id];
     };
     igEnd();
-    if(0) {
+    
     ImDrawList* idl = igGetBackgroundDrawList();
-    ImVec2 pos  = igGetCursorScreenPos();
-    ImVec2 size = igGetContentRegionAvail();
-    ImVec2 corner = (ImVec2){pos.x+size.x, pos.y+size.y};
-    for(int col=5; col< data->cols; col++) {
-        unsigned int row = data->max_id[col];
+    float s = 10.0;
+    vec4 w0 = {   0.0,   0.0,   0.0, 1.0}; 
+    vec4 wx = {     s,   0.0,   0.0, 1.0};
+    vec4 wy = {   0.0,     s,   0.0, 1.0};
+    vec4 wz = {   0.0,   0.0,     s, 1.0};
+    
+    vec4 p0, px, py, pz;
+    w2s(p0, scene->mvp, w0);
+    w2s(px, scene->mvp, wx);
+    w2s(py, scene->mvp, wy);
+    w2s(pz, scene->mvp, wz);
+
+    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){px[0], px[1]}, 0x7FFF0000,1.0);
+    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){py[0], py[1]}, 0x7F00FF00,1.0);
+    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){pz[0], pz[1]}, 0x7F0000FF,1.0);
+    
+    /* 
+    char buf[2048]={0}; 
+    // sprintf(buf, "%04.2f %04.2f -> %04.2f %04.2f\n", p0[0], p0[1], px[0], px[1]);
+    mat4x4_print(buf, "p", scene->p);
+    mat4x4_print(buf, "v", scene->v);
+    mat4x4_print(buf, "mvp", scene->mvp);
+    ImDrawList_AddText(idl,(ImVec2){10,10},0xFFFFFFFF,buf,NULL);
+    */
+   
+    if(1) {
+        ImDrawList* idl = igGetBackgroundDrawList();
+        unsigned int row = data->max_id[gui_col_id];
         float* max_row = &data->data[row*data->cols];
         vec4 pos = {max_row[0], max_row[1], max_row[2], 1.0};
-        vec4 prj = {0};
-        mat4x4_mul_vec4(prj, scene->mvp, pos);
-        // mat4x4_mul_vec4(prj, scene->rot, prj);
+        vec4 prj; 
+        w2s(prj, scene->mvp, pos);
+        ImVec2 c = {prj[0], prj[1]};
+
+        float r = 20.0;
+        ImDrawList_AddCircle(idl, c, r, 0x7fFFFFFF,16,1.0);
         
+        char buf[1000];
+        sprintf(buf, "max value: %5.2f", data->max[gui_col_id]);
+        ImVec2 ts = igCalcTextSize(buf, NULL, 0, 500.0);
         ImDrawList_AddText(
-            idl, 
-            (ImVec2){prj[0]*100, -prj[1]*100}, 
-            0xAFFFFFFF, 
-            data->header[col], 
-            NULL);
-    }    
+            idl, (ImVec2) {c.x-ts.x/2.0, c.y+r+5.0}, 
+            0xAFFFFFFF, buf, NULL);
+        ts = igCalcTextSize(data->header[gui_col_id], NULL, 0, 500.0);
+        ImDrawList_AddText(
+            idl, (ImVec2) {c.x-ts.x/2.0, c.y-ts.y-r-5.0}, 
+            0xAFFFFFFF, data->header[gui_col_id], NULL);
     }
-    igShowDemoWindow(NULL);
+
+    // igShowDemoWindow(NULL);
     
     gui_focused = igIsWindowFocused(ImGuiFocusedFlags_AnyWindow);
+}
+
+// https://www.songho.ca/opengl/gl_transform.html#wincoord
+static w2s(vec4 r, mat4x4 mvp, vec4 p) {
+    mat4x4_mul_vec4(r, mvp, p); 
+    r[0]=(r[0]/r[3]+1.0)*width /2.0; 
+    r[1]=(1.0-r[1]/r[3])*height/2.0; 
+    r[2]=r[2]/r[3];
 }
 
 void gui_render(){

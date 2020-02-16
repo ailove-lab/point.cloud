@@ -255,6 +255,47 @@ static inline void mat4x4_rotate_Z(mat4x4 Q, mat4x4 M, float angle)
 	};
 	mat4x4_mul(Q, M, R);
 }
+
+
+static inline void mat4x4_rotate_U(mat4x4 Q, mat4x4 M, float angle)
+{
+	float s = sinf(angle);
+	float c = cosf(angle);
+	mat4x4 R = {
+		{ 1.f, 0.f, 0.f, 0.f},
+		{ 0.f, 1.f, 0.f, 0.f},
+		{ 0.f, 0.f,   c,   s},
+		{ 0.f, 0.f,  -s,   c}
+	};
+	mat4x4_mul(Q, M, R);
+}
+
+static inline void mat4x4_rotate_V(mat4x4 Q, mat4x4 M, float angle)
+{
+	float s = sinf(angle);
+	float c = cosf(angle);
+	mat4x4 R = {
+		{ 1.f, 0.f, 0.f, 0.f},
+		{ 0.f,   c, 0.f,   s},
+		{ 0.f, 0.f, 1.f, 0.f},
+		{ 0.f,  -s, 0.f,   c}
+	};
+	mat4x4_mul(Q, M, R);
+}
+
+static inline void mat4x4_rotate_W(mat4x4 Q, mat4x4 M, float angle)
+{
+	float s = sinf(angle);
+	float c = cosf(angle);
+	mat4x4 R = {
+		{   c, 0.f, 0.f,   s},
+		{ 0.f, 1.f, 0.f, 0.f},
+		{ 0.f, 0.f, 1.f, 0.f},
+		{  -s, 0.f, 0.f,   c}
+	};
+	mat4x4_mul(Q, M, R);
+}
+
 static inline void mat4x4_invert(mat4x4 T, mat4x4 M)
 {
 	float s[6];
@@ -566,6 +607,14 @@ static inline void quat_from_mat4x4(quat q, mat4x4 M)
 	q[1] = (M[p[0]][p[1]] - M[p[1]][p[0]])/(2.f*r);
 	q[2] = (M[p[2]][p[0]] - M[p[0]][p[2]])/(2.f*r);
 	q[3] = (M[p[2]][p[1]] - M[p[1]][p[2]])/(2.f*r);
+}
+
+static void vec4_print(char* s, vec4 v) {
+    sprintf(s+strlen(s), "% 6.2f % 6.2f % 6.2f % 6.2f\n", v[0], v[1], v[2], v[3]);
+}
+static void mat4x4_print(char* s, char* n, mat4x4 m){
+    sprintf(s+strlen(s), "[%s]\n", n);
+	for(int i=0;i<4;i++) vec4_print(s, m[i]);
 }
 
 #endif
