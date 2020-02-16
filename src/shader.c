@@ -42,8 +42,10 @@ shader_ctor(char* shader_name) {
     
     shader->mvp = glGetUniformLocation(shader->prog, "mvp");
     shader->rot = glGetUniformLocation(shader->prog, "rot");
+    shader->off = glGetUniformLocation(shader->prog, "off");
     shader->min = glGetUniformLocation(shader->prog, "min");
     shader->max = glGetUniformLocation(shader->prog, "max");
+    shader->point_size = glGetUniformLocation(shader->prog, "point_size");
     shader->alpha_1= glGetUniformLocation(shader->prog, "alpha_1");
     shader->alpha_2= glGetUniformLocation(shader->prog, "alpha_2");
 

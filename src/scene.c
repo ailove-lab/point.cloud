@@ -89,6 +89,7 @@ static inline void mat4x4_rotate_W(mat4x4 Q, mat4x4 M, float angle)
 	};
 	mat4x4_mul(Q, M, R);
 }
+
 void 
 scene_render(scene_p scene) {
 
@@ -103,39 +104,36 @@ scene_render(scene_p scene) {
     mat4x4_perspective(scene->p, 30, (float)width/(float)height, 0.0001, 1000.0);
     
     mat4x4_look_at(scene->v, 
-    	(vec3){x,y,z}, 
+    	(vec3){  x,  y,  z}, 
     	(vec3){0.0,0.0,0.0},
     	(vec3){0.0,1.0,0.0});
+
     shader_start(shader);
     for(size_t i=0; i<scene->objects.n; i++) {
+        
         obj_p o = scene->objects.a[i];
         
-        mat4x4 mvp;
-        mat4x4_mul(mvp, scene->p, scene->v);
+        mat4x4_mul(scene->mvp, scene->p, scene->v);
+        mat4x4_identity(scene->rot);
+        mat4x4_rotate_U(scene->rot, scene->rot, gui_rot_u);
 
-        mat4x4 rot;
-        mat4x4_identity(rot);
-        mat4x4_rotate_U(rot, rot, gui_rot_u);
-        mat4x4_rotate_V(rot, rot, gui_rot_v);
-
-        // print_mat("p", scene->p);
-        // print_mat("v", scene->v);
-        // print_mat("m", o->m);
-        mat4x4 m;
-        mat4x4_identity(m);
+        // mat4x4_rotate_V(rot, rot, gui_rot_v);
+        // mat4x4 m;
+        // mat4x4_identity(m);
         // mat4x4_rotate_U(o->m,m,betta);
-        mat4x4_mul(mvp, mvp, o->m);
+        // mat4x4_mul(mvp, mvp, o->m);
         // print_mat("mvp", mvp);
         // printf("%d\n", shader->mvp);
 
-        glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) mvp);
-        glUniformMatrix4fv(shader->rot, 1, GL_FALSE, (const GLfloat*) rot);
-        glUniform1f(shader->min, (const GLfloat) gui_min);
-        glUniform1f(shader->max, (const GLfloat) gui_max);
-        glUniform1f(shader->alpha_1, (const GLfloat) gui_alpha_1);
-        glUniform1f(shader->alpha_2, (const GLfloat) gui_alpha_2);
-    
-        
+        glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) scene->mvp);
+        glUniformMatrix4fv(shader->rot, 1, GL_FALSE, (const GLfloat*) scene->rot);
+        glUniform1f(shader->off,        (const GLfloat) gui_off_u);
+        glUniform1f(shader->min,        (const GLfloat) gui_min);
+        glUniform1f(shader->max,        (const GLfloat) gui_max);
+        glUniform1f(shader->alpha_1,    (const GLfloat) gui_alpha_1);
+        glUniform1f(shader->alpha_2,    (const GLfloat) gui_alpha_2);
+        glUniform1f(shader->point_size, (const GLfloat) gui_point_size);
+            
         obj_render(o);
     }
     shader_stop(shader);

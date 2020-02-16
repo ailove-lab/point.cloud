@@ -64,7 +64,7 @@ void bbgl_loop() {
         /* Input */
         glfwPollEvents();
         
-        gui_update();
+        gui_update(scene);
 
         /* Draw */
         glfwGetWindowSize(win, &width, &height);
@@ -74,6 +74,7 @@ void bbgl_loop() {
         
         //SCENE
         glEnable(GL_BLEND);
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         scene_render(scene);
         glDisable(GL_BLEND);

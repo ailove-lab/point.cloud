@@ -38,7 +38,9 @@ static void cursor_position_callback(
             gui_camera_ry -= (old_xpos-xpos)*0.1;
         } else if(glfwGetMouseButton(win,1) == GLFW_PRESS) {
             gui_rot_u -= (old_xpos-xpos)*0.01;
-            gui_rot_v -= (old_ypos-ypos)*0.01;
+            // gui_rot_v -= (old_ypos-ypos)*0.01;
+            gui_off_u -= (old_ypos-ypos)*0.1;
+        
         }
     }
     old_xpos = xpos;
@@ -58,6 +60,6 @@ static void mouse_scroll_callback(
     double xoffset,
     double yoffset) {
     if(!gui_focused) {
-        gui_camera_zoom -= yoffset;
+        gui_camera_zoom -= yoffset*0.1;
     }
 }

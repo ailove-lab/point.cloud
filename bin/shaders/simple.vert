@@ -2,8 +2,11 @@
 
 uniform mat4 mvp;
 uniform mat4 rot;
+uniform float off;
 uniform float min;
 uniform float max;
+
+uniform float point_size;
 uniform float alpha_1;
 uniform float alpha_2;
 
@@ -26,13 +29,14 @@ void main() {
     vec4 b = vec4(0.0, 0.0, 1.0, 0.5);
     
     int i = 1;
+    float k = 0.0;
     if(data<min || data>max) {
         out_col = vec4(0.2,0.2,0.2,alpha_1);
     } else {
-        float k = (data-min)/(max-min);
+        k = (data-min)/(max-min);
         // out_col = a*k + b*(1-k);
         out_col = vec4(hsv2rgb(vec3(k*0.75, 1.0, 1.0)), alpha_2);
     }
-
-    gl_Position = mvp*(vec4(0.0, 0.0, 0.0, 9.0)+rot*pos);
+    gl_PointSize = point_size;
+    gl_Position = mvp*(vec4(0.0, 0.0, 0.0, off)+rot*pos);
 }

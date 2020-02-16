@@ -3,13 +3,15 @@
 #include <GL/gl3w.h>
 
 typedef struct {
-	GLuint prog;
-	GLuint mvp;
-	GLuint rot;
-	GLuint alpha_1;
-	GLuint alpha_2;
-	GLuint min;
-	GLuint max;
+	GLuint prog; // shader id
+	GLuint mvp; // model view projection
+	GLuint rot; // rotation matrix
+	GLuint off; // u axis offset
+	GLuint point_size; // size of point
+	GLuint alpha_1; // out alpha
+	GLuint alpha_2; // in alpha
+	GLuint min; // min in value 
+	GLuint max; // max in value
 } shader_t;
 typedef shader_t* shader_p;
 

@@ -17,6 +17,8 @@ void data_free(data_t* csv) {
         free(csv->data);
         free(csv->min);
         free(csv->max);
+        free(csv->min_id);
+        free(csv->max_id);
         free(csv);
     }
 }
@@ -41,9 +43,12 @@ data_t* data_load(char* filename) {
     fgets(line, LINE_SIZE, fp);
     parse_header(csv, line);
     
-    csv->data = calloc((csv->rows+1) * csv->cols, sizeof(float));
-    csv->min  = calloc(csv->cols, sizeof(float));
-    csv->max  = calloc(csv->cols, sizeof(float));
+    csv->data   = calloc((csv->rows+1) * csv->cols, sizeof(float));
+    csv->min    = calloc(csv->cols, sizeof(float));
+    csv->max    = calloc(csv->cols, sizeof(float));
+    csv->min_id = calloc(csv->cols, sizeof(unsigned int));
+    csv->max_id = calloc(csv->cols, sizeof(unsigned int));
+    
     size_t row = 0;
     while(fgets(line, LINE_SIZE, fp)) {
         char* tmp = line;
@@ -54,8 +59,14 @@ data_t* data_load(char* filename) {
             col++, t = strtok(NULL, ",\n")) {
             float f = atof(t);
             csv->data[row * csv->cols + col] = f;
-            if (csv->min[col] > f) csv->min[col] = f;
-            if (csv->max[col] < f) csv->max[col] = f;
+            if (csv->min[col] > f) {
+                csv->min[col] = f;
+                csv->min_id[col] = row;
+            }
+            if (csv->max[col] < f) {
+                csv->max[col] = f;
+                csv->max_id[col] = row;
+            }
             // Break if data greater than header
             if(col>=csv->cols) break;
 	    }
