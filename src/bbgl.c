@@ -31,15 +31,15 @@ void bbgl_init() {
 
     /* GLFW */
     glfwSetErrorCallback(error_callback);
-    if (!glfwInit()) {
-        fprintf(stdout, "[GFLW] failed to init!\n");
-        exit(1);
-    }
+    if (!glfwInit()) exit(1);
+    
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Cluster cloud", NULL, NULL);
+    if(!win) exit(1);
+
     glfwMakeContextCurrent(win);
     gl3wInit();
     glfwGetWindowSize(win, &width, &height);
