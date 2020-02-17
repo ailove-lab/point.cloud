@@ -41,9 +41,18 @@ add_executable(
 	${source_files}
 	${gl3w_files})
 
+if(UNIX)
+	set(libs m GL dl)
+endif (UNIX)
+
+if(WIN32)
+	set(libs m opengl32 dl)
+endif (WIN32)
+
+
 target_link_libraries(
 	${project_name}
     ${GLFW_LIBRARIES}
-	m GL dl)
+	${libs})
 
 

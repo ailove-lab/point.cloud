@@ -4,7 +4,7 @@
 data_p data;
 
 int main(int argc, char** argv) {
-    data = data_load("_clusters.4d.csv");
+    data = data_load("eyes.4d.csv");
     bbgl_init();
     bbgl_loop();
     data_free(data);
