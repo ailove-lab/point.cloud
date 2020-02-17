@@ -49,6 +49,10 @@ file(GLOB
 	"${imgui_impl}/imgui_impl_glfw.cpp"
 	"${imgui_impl}/imgui_impl_opengl3.cpp")
 add_library(cimgui ${cimgui_files})
+if (WIN32)
+	target_link_libraries(cimgui ${GLFW_LIBRARIES})
+endif (WIN32)
+
 target_compile_definitions(cimgui PRIVATE 
 	IMGUI_IMPL_API=extern\ \"C\"
 	IMGUI_IMPL_OPENGL_LOADER_GL3W)
@@ -58,9 +62,19 @@ add_executable(
 	${source_files}
 	${gl3w_files})
 
-target_link_libraries(
-	${project_name}
-    ${GLFW_LIBRARIES}
-	m GL dl cimgui)
+if (WIN32)
+	target_link_libraries(
+		${project_name}
+		${GLFW_LIBRARIES}
+		m opengl32 dl cimgui)	
+endif (WIN32)
+
+if (LINUX)
+	target_link_libraries(
+		${project_name}
+		${GLFW_LIBRARIES}
+		m GL dl cimgui)	
+endif (LINUX)
+
 
 
