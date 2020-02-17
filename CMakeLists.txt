@@ -69,12 +69,12 @@ if (WIN32)
 		m opengl32 dl cimgui)	
 endif (WIN32)
 
-if (LINUX)
+if (UNIX)
 	target_link_libraries(
 		${project_name}
 		${GLFW_LIBRARIES}
 		m GL dl cimgui)	
-endif (LINUX)
+endif (UNIX)
 
 
 
