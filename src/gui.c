@@ -78,7 +78,7 @@ void gui_update(scene_t* scene) {
     float point_size_max   = 9.0;
     igBegin("Column", NULL, 0);
     char* col_name = data->header[gui_col_id]; 
-    sprintf(buf, "%s\nCnt:\t%'5.0f\nSum:\t%'5.2f\nMin:\t%'5.2f\nMax:\t%'5.2f", 
+    sprintf(buf, "%s\nCnt:\t%'5.0f\nSum:\t%5.2f\nMin:\t%5.2f\nMax:\t%5.2f", 
             col_name,
             data->notzero[gui_col_id], data->sum[gui_col_id],
             data->min[gui_col_id], data->max[gui_col_id]);
@@ -138,7 +138,7 @@ void gui_update(scene_t* scene) {
         float r = 20.0;
         ImDrawList_AddCircle(idl, c, r, 0x7fFFFFFF,16,1.0);
         
-        sprintf(buf, "Максимум: %'5.2f", data->max[gui_col_id]);
+        sprintf(buf, "Максимум: %5.2f", data->max[gui_col_id]);
         ImVec2 ts = igCalcTextSize(buf, NULL, 0, 500.0);
         ImDrawList_AddText(
             idl, (ImVec2) {c.x-ts.x/2.0, c.y+r+5.0}, 
