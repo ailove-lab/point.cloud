@@ -78,7 +78,7 @@ void gui_update(scene_t* scene) {
     float point_size_max   = 9.0;
     igBegin("Column", NULL, 0);
     char* col_name = data->header[gui_col_id]; 
-    sprintf(buf, "%s\nCnt:\t%'5.0f\nSum:\t%5.2f\nMin:\t%5.2f\nMax:\t%5.2f", 
+    sprintf(buf, "%s\nCnt:\t%5.0f\nSum:\t%5.2f\nMin:\t%5.2f\nMax:\t%5.2f", 
             col_name,
             data->notzero[gui_col_id], data->sum[gui_col_id],
             data->min[gui_col_id], data->max[gui_col_id]);
