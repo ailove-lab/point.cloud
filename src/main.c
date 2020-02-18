@@ -16,15 +16,15 @@ int usage() {
 
 int main(int argc, char** argv) {
     
-    if(argc!=2) return usage();
+    if(argc!=2) usage();
+    char* datafile = argc ==2 ? argv[1] : "data.csv" ;
 
-    setlocale(LC_NUMERIC, "");
-    struct lconv *loc = localeconv();
-    loc->decimal_point = ".";
-    loc->thousands_sep = " ";
+    // setlocale(LC_NUMERIC, "ru_RU.UTF-8");
+    // struct lconv *loc = localeconv();
+    // loc->decimal_point = ".";
+    // loc->thousands_sep = " ";
 
-    data = data_load(argv[1]);
-
+    data = data_load(datafile);
     bbgl_init();
     bbgl_loop();
     data_free(data);
