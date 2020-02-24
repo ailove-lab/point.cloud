@@ -137,7 +137,6 @@ void gui_update(scene_t* scene) {
         igText("Доля [%]"); igNextColumn();
         igSeparator();
         
-        static int selected = -1;
         for(int i = 0; i<data->cols; i++) {
             float sum = data->clusters[cid].cat_sum[i].sum;
             int catid = data->clusters[cid].cat_sum[i].id;
