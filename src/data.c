@@ -2,31 +2,37 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "globals.h"
 #include "data.h"
 
 #define MAX_COLS 1024
 #define LINE_SIZE 1024*1024
 
-static void parse_header(data_t* csv, char* header);
+static void parse_header(data_t* data, char* header);
+static void parse_clusters(data_t* data);
 
-void data_free(data_t* csv) {
+void data_free(data_t* data) {
     // cleanup header
-    if(csv) {    
-        for(size_t i = 0; i<csv->cols; i++) free(csv->header[i]);
-        free(csv->header);
-        free(csv->data);
-        free(csv->min);
-        free(csv->max);
-        free(csv->min_id);
-        free(csv->max_id);
-        free(csv->sum);
-        free(csv->notzero);
+    if(data) {    
+        for(size_t i = 0; i<data->cols; i++) free(data->header[i]);
+        free(data->header);
+        free(data->data);
+        free(data->min);
+        free(data->max);
+        free(data->min_id);
+        free(data->max_id);
+        free(data->sum);
+        free(data->notzero);
         
-        free(csv);
+        for(int i=0; i<data->clusters_cnt; i++) free(data->clusters[i].cat_sum);
+        free(data->clusters); 
+
+        free(data);
     }
 }
 
-data_t* data_load(char* filename) {
+data_t* 
+data_load(char* filename) {
 
     printf("Loading %s\n", filename);
     
@@ -34,25 +40,24 @@ data_t* data_load(char* filename) {
     if (!fp) return NULL;
     
     // allocate structure
-    data_t* csv = malloc(sizeof(data_t));
-    *csv = (data_t){0};
+    data_t* data = calloc(1, sizeof(data_t));
     // count lines
-    while(!feof(fp)) if(fgetc(fp) == '\n') csv->rows++;
-    printf("Counted: %ld rows\n", csv->rows);
+    while(!feof(fp)) if(fgetc(fp) == '\n') data->rows++;
+    printf("Counted: %d rows\n", data->rows);
     rewind(fp);
 
     //parse header
     char line[LINE_SIZE];
     fgets(line, LINE_SIZE, fp);
-    parse_header(csv, line);
+    parse_header(data, line);
     
-    csv->data    = calloc((csv->rows+1) * csv->cols, sizeof(float));
-    csv->min     = calloc(csv->cols, sizeof(float));
-    csv->max     = calloc(csv->cols, sizeof(float));
-    csv->sum     = calloc(csv->cols, sizeof(float));
-    csv->notzero = calloc(csv->cols, sizeof(float));
-    csv->min_id  = calloc(csv->cols, sizeof(unsigned int));
-    csv->max_id  = calloc(csv->cols, sizeof(unsigned int));
+    data->data    = calloc((data->rows+1) * data->cols, sizeof(float));
+    data->min     = calloc(data->cols, sizeof(float));
+    data->max     = calloc(data->cols, sizeof(float));
+    data->sum     = calloc(data->cols, sizeof(float));
+    data->notzero = calloc(data->cols, sizeof(float));
+    data->min_id  = calloc(data->cols, sizeof(unsigned int));
+    data->max_id  = calloc(data->cols, sizeof(unsigned int));
     
     size_t row = 0;
     while(fgets(line, LINE_SIZE, fp)) {
@@ -63,35 +68,115 @@ data_t* data_load(char* filename) {
             t && *t; 
             col++, t = strtok(NULL, ",\n")) {
             float f = atof(t);
-            csv->data[row * csv->cols + col] = f;
+            data->data[row * data->cols + col] = f;
             if (f != 0.0) {
-                csv->notzero[col]++;
-                csv->sum[col]+= f;
+                data->notzero[col]++;
+                data->sum[col]+= f;
             }
-            if (csv->min[col] > f) {
-                csv->min[col] = f;
-                csv->min_id[col] = row;
+            if (data->min[col] > f) {
+                data->min[col] = f;
+                data->min_id[col] = row;
             }
-            if (csv->max[col] < f) {
-                csv->max[col] = f;
-                csv->max_id[col] = row;
+            if (data->max[col] < f) {
+                data->max[col] = f;
+                data->max_id[col] = row;
             }
             // Break if data greater than header
-            if(col>=csv->cols) break;
+            if(col>=data->cols) break;
 	    }
         row++;
     }
     
+    parse_clusters(data);
+    
     printf("loaded: %ld rows\n", row);
-    printf("csv->cols: %ld\n", csv->cols);
-    printf("csv->rows: %ld\n", csv->rows);
+    printf("data->cols: %d\n", data->cols);
+    printf("data->rows: %d\n", data->rows);
 
     fclose(fp);
     
-    return csv;
+    return data;
 }
 
-static void parse_header(data_t* csv, char* header) {
+
+static int clusters_comp(const void* a, const void* b) {
+    cluster_stat_t* c1 = a;
+    cluster_stat_t* c2 = b;
+    return c2->sum - c1->sum;
+}
+
+static int cat_stat_comp(const void* a, const void* b) {
+    cat_stat_t* c1 = a;
+    cat_stat_t* c2 = b;
+    return c2->sum - c1->sum;
+}
+
+static void parse_clusters(data_t* data) {
+    // search default cluster column if need
+    if (cluster_col<0) {
+        for(int col=0; col < data->cols; col++) {
+            if(strcmp(data->header[col], "clust") == 0) {
+                cluster_col = col;
+                break;
+            }
+        }
+    }
+
+    // cluster col not set
+    if(cluster_col < 0) return;
+    printf("cluster_col found: %d\n", cluster_col);
+    
+    // min / max values of cluster id
+    int min = (int)data->min[cluster_col];
+    int max = (int)data->max[cluster_col];
+    printf("Cluster ids %d - %d\n", min, max);
+    
+    // init clusters stat sturcts 
+    data->clusters_cnt = max - min + 1;
+    data->clusters = calloc(data->clusters_cnt, sizeof(cluster_stat_t));
+    for(int cls=0; cls<data->clusters_cnt; cls++) { 
+        data->clusters[cls].cat_sum = calloc(data->cols, sizeof(cat_stat_t));
+        // init col ids
+        for(int col=0; col < data->cols; col++) {
+            data->clusters[cls].cat_sum[col].id = col;
+        }
+    }
+
+    // aggregate clusters stats
+    for(int row = 0; row < data->rows; row++) {
+        int cluster = (int) (data->data[row*data->cols + cluster_col]);
+        int cid = cluster - min; // min = -1 by deafult
+        // count members of cluster
+        data->clusters[cid].cnt++;
+        data->clusters[cid].id = cluster; 
+        for(int col = 0; col < data->cols; col++) {
+            // get category float
+            float f = data->data[row*data->cols + col];
+            if(f>0.0) {
+                // integrate per category sum
+                data->clusters[cid].cat_sum[col].sum += f;
+                // integrate only categories cols
+                if (col >= categories_start)
+                    data->clusters[cid].sum += f;
+            }
+        }
+    }
+
+    // sort clusters by total sum
+    qsort(data->clusters, 
+        data->clusters_cnt, 
+        sizeof(cluster_stat_t), 
+        clusters_comp);
+    // sort cluster stat by category sum
+    for(int cls=0; cls<data->clusters_cnt; cls++) { 
+        qsort(data->clusters[cls].cat_sum, 
+            data->cols, 
+            sizeof(cat_stat_t), 
+            cat_stat_comp); 
+    }
+}
+
+static void parse_header(data_t* data, char* header) {
     char* s = strdup(header);
     char* t; // token
     char* n; // tail
@@ -103,43 +188,43 @@ static void parse_header(data_t* csv, char* header) {
     while(t && *t) {
         // trim comma, spaces
         while(t[0]==' ') t++;
-        names[csv->cols] = strdup(t);
-        // printf("%d\t%s\n", csv->cols, t);
-        csv->cols++;
-        if(csv->cols >= MAX_COLS) break;
+        names[data->cols] = strdup(t);
+        // printf("%d\t%s\n", data->cols, t);
+        data->cols++;
+        if(data->cols >= MAX_COLS) break;
 
         while(n[0]==' '|| n[0]==',') n++;
         if(n[0]==0) break;
         // check if name is quoted
         t = (n[0]=='"') ? strtok_r(NULL, "\"", &n) : strtok_r(NULL, ",\n", &n);
     }
-    size_t l = sizeof(char*) * csv->cols;
-    csv->header = malloc(l);
-    memcpy(csv->header, names, l);
+    size_t l = sizeof(char*) * data->cols;
+    data->header = malloc(l);
+    memcpy(data->header, names, l);
 
     free(s);
 }
 
 #ifdef TEST_CSV
 int main() {
-    data_t* csv = data_load("data.basket.csv");
+    data_t* data = data_load("data.basket.data");
     
-    printf("cols: %zu\n", csv->cols);
-    printf("rows: %zu\n", csv->rows);
+    printf("cols: %zu\n", data->cols);
+    printf("rows: %zu\n", data->rows);
 
-    for(int i=0; i< csv->cols; i++) {
-        printf("%s min: %0.0f %0.0f\n", csv->header[i], csv->min[i], csv->max[i]);
+    for(int i=0; i< data->cols; i++) {
+        printf("%s min: %0.0f %0.0f\n", data->header[i], data->min[i], data->max[i]);
     }
     /*
-    for(int j=0; j< csv->rows; j++) {
-        for(int i=0; i< csv->cols; i++) {
-            if(csv->data[csv->cols*j+i] >0.0)
-            printf("%s: %0.0f ", csv->header[i], csv->data[csv->cols*j+i]);
+    for(int j=0; j< data->rows; j++) {
+        for(int i=0; i< data->cols; i++) {
+            if(data->data[data->cols*j+i] >0.0)
+            printf("%s: %0.0f ", data->header[i], data->data[data->cols*j+i]);
         }
         printf("\n");
     }
     */
-    data_free(csv); 
+    data_free(data); 
     return 0;
 }
 #endif

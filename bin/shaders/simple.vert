@@ -10,7 +10,6 @@ uniform float point_size;
 uniform float alpha_1;
 uniform float alpha_2;
 
-
 layout (location = 0) in vec4 pos;
 layout (location = 1) in float data;
 

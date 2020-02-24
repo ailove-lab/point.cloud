@@ -17,6 +17,7 @@
 #include <cimgui.h>
 // #include <imgui_impl_glfw.h>
 
+#include "globals.h"
 #include "bbgl.h"
 #include "gui.h"
 #include "data.h"
@@ -64,6 +65,8 @@ void gui_init(GLFWwindow* win) {
 static w2s(vec4 r, mat4x4 mvp, vec4 p);
 
 data_p data;
+
+static char* format_float(const char* format, float f);
 void gui_update(scene_t* scene) {
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -76,12 +79,14 @@ void gui_update(scene_t* scene) {
     float alpha_slider_max = 1.0;
     float point_size_min   = 1.0;
     float point_size_max   = 9.0;
-    igBegin("Column", NULL, 0);
+
+    igBegin("Колонки", NULL, 0);
     char* col_name = data->header[gui_col_id]; 
     sprintf(buf, "%s\nCnt:\t%5.0f\nSum:\t%5.2f\nMin:\t%5.2f\nMax:\t%5.2f", 
             col_name,
             data->notzero[gui_col_id], data->sum[gui_col_id],
             data->min[gui_col_id], data->max[gui_col_id]);
+
     igText(buf);
     igSliderScalar("min",ImGuiDataType_Float, &gui_min, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
     if(gui_max<gui_min) gui_max = gui_min;
@@ -100,6 +105,64 @@ void gui_update(scene_t* scene) {
     };
     igEnd();
     
+    // clusters
+    if(cluster_col > 0) {
+        char buf[256];
+        igBegin("Кластеры", NULL, 0);
+        
+        static int cid=0; //(int)data->min[data->cluster_col];
+        // int min = (int) data->min[cluster_col];
+        // int max = (int) data->max[cluster_col];
+        if(igDragInt("Кластер", &cid, 0.25, 0, data->clusters_cnt-1, "%d")) {
+            gui_col_id = cluster_col;
+            gui_min = data->clusters[cid].id-0.1;
+            gui_max = data->clusters[cid].id+0.1; 
+        };
+       
+        sprintf(buf, 
+            "id:%d\nРазмер кастера: %d\nДоход кластера: %s",
+            data->clusters[cid].id,
+            data->clusters[cid].cnt,
+            format_float("%.2f руб",data->clusters[cid].sum)); 
+        igText(buf);
+        igSeparator();
+
+        igColumns(3, "cols", false);
+        ImVec2 win_size = igGetWindowSize(); 
+        igSetColumnWidth(0,win_size.x*0.70);
+        igSetColumnWidth(1,win_size.x*0.15);
+        igSetColumnWidth(2,win_size.x*0.15);
+        igText("Категория"  ); igNextColumn();
+        igText("Доход [руб]"); igNextColumn();
+        igText("Доля [%]"); igNextColumn();
+        igSeparator();
+        
+        static int selected = -1;
+        for(int i = 0; i<data->cols; i++) {
+            float sum = data->clusters[cid].cat_sum[i].sum;
+            int catid = data->clusters[cid].cat_sum[i].id;
+            float sump = sum / data->clusters[cid].sum * 100.0;
+            if(catid >= categories_start && sum > 0.0) {
+                if (igSelectable(data->header[catid], false, ImGuiSelectableFlags_SpanAllColumns, (ImVec2){0.0,0.0})) {
+                    gui_col_id = catid;
+                    gui_min = data->min[gui_col_id] + (data->max[gui_col_id]-data->min[gui_col_id])*0.01;
+                    gui_max = data->max[gui_col_id];
+                }
+                // bool hovered = igIsItemHovered();
+                // igText(data->header[catid]); 
+                igNextColumn();
+                // align right
+                // igSetCursorPosX(igGetCursorPosX()+igGetColumnWidth(1)-igCalcTextSize(buf, NULL, 0, 500).x-igGetStyle()->ItemSpacing.x);
+                igText(format_float("%.2f",sum)); igNextColumn();
+                sprintf(buf, "% 5.2f", sump);
+                igText(buf); igNextColumn();
+            }
+        }
+        igColumns(1, NULL, false);
+        igEnd();
+        
+    }
+
     ImDrawList* idl = igGetBackgroundDrawList();
     float s = 10.0;
     vec4 w0 = {   0.0,   0.0,   0.0, 1.0}; 
@@ -160,6 +223,31 @@ static w2s(vec4 r, mat4x4 mvp, vec4 p) {
     r[0]=(r[0]/r[3]+1.0)*width /2.0; 
     r[1]=(1.0-r[1]/r[3])*height/2.0; 
     r[2]=r[2]/r[3];
+}
+
+static char* format_float(const char* format, float f) {
+    static char tmp[128];
+    char src[128];
+    sprintf(src, format, f);
+    int l = strlen(src);
+    char* s = &src[l];
+    char* d = &tmp[127];
+
+    while(1) {
+        *d = *s; d--; s--;
+        if(d == tmp-1 || s == src-1) return;
+        if(d[1] == '.') break;
+    }
+
+    int i = 0;
+    while(1) {
+        *d = *s; d--; s--; i++;
+        if(s == src-1) break;
+        if(i%3==0) {*d=' '; d--;};
+        if(d == tmp-1) return;
+    }
+    d++;
+    return d;
 }
 
 void gui_render(){
