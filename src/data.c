@@ -115,7 +115,8 @@ static void parse_clusters(data_t* data) {
     // search default cluster column if need
     if (cluster_col<0) {
         for(int col=0; col < data->cols; col++) {
-            if(strcmp(data->header[col], "clust") == 0) {
+            if(strcmp(data->header[col], "clust"  ) == 0 || 
+               strcmp(data->header[col], "кластер") == 0 ) {
                 cluster_col = col;
                 break;
             }
