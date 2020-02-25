@@ -234,7 +234,7 @@ static char* format_float(const char* format, float f) {
 
     while(1) {
         *d = *s; d--; s--;
-        if(d == tmp-1 || s == src-1) return;
+        if(d == tmp-1 || s == src-1) return d++;
         if(d[1] == '.') break;
     }
 
@@ -243,7 +243,7 @@ static char* format_float(const char* format, float f) {
         *d = *s; d--; s--; i++;
         if(s == src-1) break;
         if(i%3==0) {*d=' '; d--;};
-        if(d == tmp-1) return;
+        if(d == tmp-1) return d++;
     }
     d++;
     return d;
