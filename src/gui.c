@@ -67,44 +67,30 @@ static w2s(vec4 r, mat4x4 mvp, vec4 p);
 data_p data;
 
 static char* format_float(const char* format, float f);
-void gui_update(scene_t* scene) {
+void clusters_window();
+void columns_window();
+void draw_axis(scene_t* scene);
+void draw_markers(scene_t* scene);
+
+void
+gui_update(scene_t* scene) {
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     igNewFrame();
 
-    char buf[2048];
+    columns_window();
+    clusters_window(); 
+    draw_axis(scene);
+    draw_markers(scene);    
 
-    float alpha_slider_min = 0.0;
-    float alpha_slider_max = 1.0;
-    float point_size_min   = 1.0;
-    float point_size_max   = 9.0;
-
-    igBegin("Колонки", NULL, 0);
-    char* col_name = data->header[gui_col_id]; 
-    sprintf(buf, "%s\nCnt:\t%5.0f\nSum:\t%5.2f\nMin:\t%5.2f\nMax:\t%5.2f", 
-            col_name,
-            data->notzero[gui_col_id], data->sum[gui_col_id],
-            data->min[gui_col_id], data->max[gui_col_id]);
-
-    igText(buf);
-    igSliderScalar("min",ImGuiDataType_Float, &gui_min, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
-    if(gui_max<gui_min) gui_max = gui_min;
-    igSliderScalar("max",ImGuiDataType_Float, &gui_max, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
-    if(gui_min>gui_max) gui_min = gui_max;
-    igSliderScalar("point size",ImGuiDataType_Float, &gui_point_size, &point_size_min, &point_size_max, NULL, 1.f);
-    igSliderScalar("alpha 1",ImGuiDataType_Float, &gui_alpha_1, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
-    igSliderScalar("alpha 2",ImGuiDataType_Float, &gui_alpha_2, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
+    // igShowDemoWindow(NULL);
     
-    int min = 0; int max = data->cols-1;
-    bool gui_col_changed = igSliderScalar("col #", ImGuiDataType_U32, &gui_col_id, &min, &max,  "%u", 1.f);
-    gui_col_changed = gui_col_changed || igListBoxStr_arr("col", &gui_col_id, data->header, data->cols, 10);
-    if(gui_col_changed) {
-        gui_min = data->min[gui_col_id] + (data->max[gui_col_id]-data->min[gui_col_id])*0.01;
-        gui_max = data->max[gui_col_id];
-    };
-    igEnd();
-    
+    gui_focused = igIsWindowFocused(ImGuiFocusedFlags_AnyWindow);
+}
+
+void
+clusters_window() {
     // clusters
     if(cluster_col > 0) {
         char buf[256];
@@ -159,9 +145,47 @@ void gui_update(scene_t* scene) {
         }
         igColumns(1, NULL, false);
         igEnd();
-        
     }
+}
 
+void 
+columns_window() {
+
+    char buf[2048];
+
+    float alpha_slider_min = 0.0;
+    float alpha_slider_max = 1.0;
+    float point_size_min   = 1.0;
+    float point_size_max   = 9.0;
+
+    igBegin("Колонки", NULL, 0);
+    char* col_name = data->header[gui_col_id]; 
+    sprintf(buf, "%s\nCnt:\t%5.0f\nSum:\t%5.2f\nMin:\t%5.2f\nMax:\t%5.2f", 
+            col_name,
+            data->notzero[gui_col_id], data->sum[gui_col_id],
+            data->min[gui_col_id], data->max[gui_col_id]);
+
+    igText(buf);
+    igSliderScalar("min",ImGuiDataType_Float, &gui_min, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
+    if(gui_max<gui_min) gui_max = gui_min;
+    igSliderScalar("max",ImGuiDataType_Float, &gui_max, &data->min[gui_col_id], &data->max[gui_col_id], NULL, 1.f);
+    if(gui_min>gui_max) gui_min = gui_max;
+    igSliderScalar("point size",ImGuiDataType_Float, &gui_point_size, &point_size_min, &point_size_max, NULL, 1.f);
+    igSliderScalar("alpha 1",ImGuiDataType_Float, &gui_alpha_1, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
+    igSliderScalar("alpha 2",ImGuiDataType_Float, &gui_alpha_2, &alpha_slider_min, &alpha_slider_max, NULL, 1.f);
+    
+    int min = 0; int max = data->cols-1;
+    bool gui_col_changed = igSliderScalar("col #", ImGuiDataType_U32, &gui_col_id, &min, &max,  "%u", 1.f);
+    gui_col_changed = gui_col_changed || igListBoxStr_arr("col", &gui_col_id, data->header, data->cols, 10);
+    if(gui_col_changed) {
+        gui_min = data->min[gui_col_id] + (data->max[gui_col_id]-data->min[gui_col_id])*0.01;
+        gui_max = data->max[gui_col_id];
+    };
+    igEnd();
+}
+
+void
+draw_axis(scene_t* scene) {
     ImDrawList* idl = igGetBackgroundDrawList();
     float s = 10.0;
     vec4 w0 = {   0.0,   0.0,   0.0, 1.0}; 
@@ -178,42 +202,39 @@ void gui_update(scene_t* scene) {
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){px[0], px[1]}, 0x7FFF0000,1.0);
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){py[0], py[1]}, 0x7F00FF00,1.0);
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){pz[0], pz[1]}, 0x7F0000FF,1.0);
-    
-    /* 
+}
+
+void
+draw_markers(scene_t* scene) {
     char buf[2048]={0}; 
+    /* 
     // sprintf(buf, "%04.2f %04.2f -> %04.2f %04.2f\n", p0[0], p0[1], px[0], px[1]);
     mat4x4_print(buf, "p", scene->p);
     mat4x4_print(buf, "v", scene->v);
     mat4x4_print(buf, "mvp", scene->mvp);
     ImDrawList_AddText(idl,(ImVec2){10,10},0xFFFFFFFF,buf,NULL);
     */
-   
-    if(1) {
-        ImDrawList* idl = igGetBackgroundDrawList();
-        unsigned int row = data->max_id[gui_col_id];
-        float* max_row = &data->data[row*data->cols];
-        vec4 pos = {max_row[0], max_row[1], max_row[2], 1.0};
-        vec4 prj; 
-        w2s(prj, scene->mvp, pos);
-        ImVec2 c = {prj[0], prj[1]};
+ 
+    ImDrawList* idl = igGetBackgroundDrawList();
+    unsigned int row = data->max_id[gui_col_id];
+    float* max_row = &data->data[row*data->cols];
+    vec4 pos = {max_row[0], max_row[1], max_row[2], 1.0};
+    vec4 prj; 
+    w2s(prj, scene->mvp, pos);
+    ImVec2 c = {prj[0], prj[1]};
 
-        float r = 20.0;
-        ImDrawList_AddCircle(idl, c, r, 0x7fFFFFFF,16,1.0);
-        
-        sprintf(buf, "Максимум: %5.2f", data->max[gui_col_id]);
-        ImVec2 ts = igCalcTextSize(buf, NULL, 0, 500.0);
-        ImDrawList_AddText(
-            idl, (ImVec2) {c.x-ts.x/2.0, c.y+r+5.0}, 
-            0xAFFFFFFF, buf, NULL);
-        ts = igCalcTextSize(data->header[gui_col_id], NULL, 0, 500.0);
-        ImDrawList_AddText(
-            idl, (ImVec2) {c.x-ts.x/2.0, c.y-ts.y-r-5.0}, 
-            0xAFFFFFFF, data->header[gui_col_id], NULL);
-    }
-
-    // igShowDemoWindow(NULL);
+    float r = 20.0;
+    ImDrawList_AddCircle(idl, c, r, 0x7fFFFFFF,16,1.0);
     
-    gui_focused = igIsWindowFocused(ImGuiFocusedFlags_AnyWindow);
+    sprintf(buf, "Максимум: %5.2f", data->max[gui_col_id]);
+    ImVec2 ts = igCalcTextSize(buf, NULL, 0, 500.0);
+    ImDrawList_AddText(
+        idl, (ImVec2) {c.x-ts.x/2.0, c.y+r+5.0}, 
+        0xAFFFFFFF, buf, NULL);
+    ts = igCalcTextSize(data->header[gui_col_id], NULL, 0, 500.0);
+    ImDrawList_AddText(
+        idl, (ImVec2) {c.x-ts.x/2.0, c.y-ts.y-r-5.0}, 
+        0xAFFFFFFF, data->header[gui_col_id], NULL);
 }
 
 // https://www.songho.ca/opengl/gl_transform.html#wincoord
