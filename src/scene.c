@@ -47,10 +47,12 @@ scene_render(scene_p scene) {
     float z = gui_camera_radius*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
     float y = gui_camera_radius*cos(gui_camera_rx/57.3);
 
+    vec4 v = {10.0, 0.0, 0.0, 0.0};
+   
     mat4x4_perspective(scene->p, scene->fov, ratio, scene->n, scene->f);
     // mat4x4_perspective(scene->p, 30, 1.0, 0.0001, 1000.0);
     mat4x4_look_at(scene->v, 
-    	(vec3){  x,   y,   z}, 
+    	(vec3){x, y, z}, 
     	(vec3){0.0, 0.0, 0.0},
     	(vec3){0.0, 1.0, 0.0});
 
@@ -80,3 +82,4 @@ scene_render(scene_p scene) {
     }
     shader_stop(shader);
 }
+
