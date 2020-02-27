@@ -65,10 +65,7 @@ void gui_init(GLFWwindow* win) {
     
 }
 
-static w2s(vec4 r, mat4x4 mvp, vec4 p);
-static s2w(vec4 r, mat4x4 mvp, vec4 p);
-
-data_p data;
+extern data_p data;
 
 static char* format_float(const char* format, float f);
 void clusters_window();
@@ -86,7 +83,7 @@ gui_update(scene_t* scene) {
 
     columns_window();
     clusters_window(); 
-    draw_axis(scene);
+    if(draging) draw_axis(scene);
     draw_markers(scene);    
 
     // igShowDemoWindow(NULL);
@@ -202,10 +199,10 @@ draw_axis(scene_t* scene) {
     vec4 wz = {   0.0,   0.0,     s, 1.0};
     
     vec4 p0, px, py, pz;
-    w2s(p0, scene->mvp, w0);
-    w2s(px, scene->mvp, wx);
-    w2s(py, scene->mvp, wy);
-    w2s(pz, scene->mvp, wz);
+    vec4_project(p0, scene->mvp, w0, width, height);
+    vec4_project(px, scene->mvp, wx, width, height);
+    vec4_project(py, scene->mvp, wy, width, height);
+    vec4_project(pz, scene->mvp, wz, width, height);
 
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){px[0], px[1]}, 0x7FFF0000,1.0);
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){py[0], py[1]}, 0x7F00FF00,1.0);
@@ -221,14 +218,14 @@ draw_axis(scene_t* scene) {
     ms[0] = mouse_x;
     ms[1] = mouse_y;
 
-    s2w(cw, scene->mvp, cs);
-    w2s(cs, scene->mvp, cw);
-    s2w(mw, scene->mvp, ms);
-    w2s(ms, scene->mvp, mw);
+    vec4_unproject(cw, scene->mvp, cs, width, height);
+    vec4_project  (cs, scene->mvp, cw, width, height);
+    vec4_unproject(mw, scene->mvp, ms, width, height);
+    vec4_project  (ms, scene->mvp, mw, width, height);
 
     vec4_mul_cross(rw, mw, cw);
     vec4_scale(rw, rw, 10.0);
-    w2s(rs, scene->mvp, rw);
+    vec4_project(rs, scene->mvp, rw, width, height);
     
     ImDrawList_AddLine(idl, 
         (ImVec2) {ms[0], ms[1]}, 
@@ -253,33 +250,6 @@ draw_axis(scene_t* scene) {
 }
 
 
-// https://www.songho.ca/opengl/gl_transform.html#wincoord
-// world to screen
-static 
-w2s(vec4 r, mat4x4 mvp, vec4 p) {
-    mat4x4_mul_vec4(r, mvp, p); 
-    r[0]=(r[0]/r[3]+1.0)*width /2.0; 
-    r[1]=(1.0-r[1]/r[3])*height/2.0; 
-    r[2]/=r[3];
-}
-
-
-// screen to vec
-// https://stackoverflow.com/questions/7692988/opengl-math-projecting-screen-space-to-world-space-coords
-static
-s2w(vec4 r, mat4x4 mvp, vec4 p) {
-   p[0] = p[0]/width*2.0-1.0;
-   p[1] = 1.0-p[1]/height*2.0;
-   p[2] = 1.0;
-   p[3] = 1.0;
-   mat4x4 mvp_i;
-   mat4x4_invert(mvp_i, mvp);
-   mat4x4_mul_vec4(r, mvp_i, p);
-   // r[0]/=r[3];
-   // r[1]/=r[3];
-   // r[2]*=r[3]; 
-}
-
 void
 draw_markers(scene_t* scene) {
     char buf[2048]={0}; 
@@ -296,7 +266,7 @@ draw_markers(scene_t* scene) {
     float* max_row = &data->data[row*data->cols];
     vec4 pos = {max_row[0], max_row[1], max_row[2], 1.0};
     vec4 prj; 
-    w2s(prj, scene->mvp, pos);
+    vec4_project(prj, scene->mvp, pos, width, height);
     ImVec2 c = {prj[0], prj[1]};
 
     float r = 20.0;

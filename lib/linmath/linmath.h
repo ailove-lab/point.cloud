@@ -612,9 +612,35 @@ static inline void quat_from_mat4x4(quat q, mat4x4 M)
 static void vec4_print(char* s, vec4 v) {
     sprintf(s+strlen(s), "% 6.2f % 6.2f % 6.2f % 6.2f\n", v[0], v[1], v[2], v[3]);
 }
+
 static void mat4x4_print(char* s, char* n, mat4x4 m){
     sprintf(s+strlen(s), "[%s]\n", n);
 	for(int i=0;i<4;i++) vec4_print(s, m[i]);
+}
+
+// https://www.songho.ca/opengl/gl_transform.html#wincoord
+// world to screen
+static void vec4_project(vec4 r, mat4x4 mvp, vec4 p, float w, float h) {
+    mat4x4_mul_vec4(r, mvp, p); 
+    r[0]=(r[0]/r[3]+1.0) * w/2.0; 
+    r[1]=(1.0-r[1]/r[3]) * h/2.0; 
+    r[2]/=r[3];
+}
+
+
+// screen to vec
+// https://stackoverflow.com/questions/7692988/opengl-math-projecting-screen-space-to-world-space-coords
+static void vec4_unproject(vec4 r, mat4x4 mvp, vec4 p, float w, float h) {
+   p[0] = p[0]/w*2.0 - 1.0;
+   p[1] = 1.0 -	p[1]/h*2.0;
+   p[2] = 1.0;
+   p[3] = 1.0;
+   mat4x4 mvp_i;
+   mat4x4_invert(mvp_i, mvp);
+   mat4x4_mul_vec4(r, mvp_i, p);
+   // r[0]/=r[3];
+   // r[1]/=r[3];
+   // r[2]*=r[3]; 
 }
 
 #endif

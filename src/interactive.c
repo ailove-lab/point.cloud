@@ -7,7 +7,7 @@ static void cursor_position_callback(GLFWwindow* win, double xpos, double ypos);
 static void mouse_button_callback   (GLFWwindow* win, int button, int action, int mods);
 static void mouse_scroll_callback   (GLFWwindow* win, double xoffset, double yoffset);
 
-static char draging = 0;
+char draging = 0;
 
 void 
 interactive_init(GLFWwindow* win) {
