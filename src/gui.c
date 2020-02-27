@@ -18,6 +18,7 @@
 // #include <imgui_impl_glfw.h>
 
 #include "globals.h"
+#include "interactive.h"
 #include "bbgl.h"
 #include "gui.h"
 #include "data.h"
@@ -38,6 +39,8 @@ float gui_alpha_2    = 0.75;
 int gui_col_id = 0;
 float gui_min = 0.0;
 float gui_max = 50.0;
+
+int gui_focused = 0;
 
 struct ImGuiContext* ctx;
 struct ImGuiIO* io;
@@ -63,6 +66,7 @@ void gui_init(GLFWwindow* win) {
 }
 
 static w2s(vec4 r, mat4x4 mvp, vec4 p);
+static s2w(vec4 r, mat4x4 mvp, vec4 p);
 
 data_p data;
 
@@ -71,6 +75,7 @@ void clusters_window();
 void columns_window();
 void draw_axis(scene_t* scene);
 void draw_markers(scene_t* scene);
+
 
 void
 gui_update(scene_t* scene) {
@@ -88,6 +93,7 @@ gui_update(scene_t* scene) {
     
     gui_focused = igIsWindowFocused(ImGuiFocusedFlags_AnyWindow);
 }
+
 
 void
 clusters_window() {
@@ -148,6 +154,7 @@ clusters_window() {
     }
 }
 
+
 void 
 columns_window() {
 
@@ -184,6 +191,7 @@ columns_window() {
     igEnd();
 }
 
+
 void
 draw_axis(scene_t* scene) {
     ImDrawList* idl = igGetBackgroundDrawList();
@@ -202,6 +210,62 @@ draw_axis(scene_t* scene) {
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){px[0], px[1]}, 0x7FFF0000,1.0);
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){py[0], py[1]}, 0x7F00FF00,1.0);
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){pz[0], pz[1]}, 0x7F0000FF,1.0);
+
+    // cursor screen, cursor world
+    vec4 cs, cw, ms, mw;
+    cs[0] = click_x;
+    cs[1] = click_y;
+    ms[0] = mouse_x;
+    ms[1] = mouse_y;
+    
+    s2w(cw, scene->mvp, cs);
+    w2s(cs, scene->mvp, cw);
+    s2w(mw, scene->mvp, ms);
+    w2s(ms, scene->mvp, mw);
+    
+    ImDrawList_AddLine(idl, 
+        (ImVec2) {ms[0], ms[1]}, 
+        (ImVec2) {cs[0], cs[1]}, 
+        0x7F7F7F7F, 1.0);
+    
+    ImDrawList_AddLine(idl, 
+        (ImVec2) {p0[0], p0[1]}, 
+        (ImVec2) {cs[0], cs[1]}, 
+        0x7F7F7F7F, 1.0);
+    
+    ImDrawList_AddLine(idl, 
+        (ImVec2) {ms[0], ms[1]}, 
+        (ImVec2) {p0[0], p0[1]}, 
+        0x7F7F7F7F, 1.0);
+    
+}
+
+
+// https://www.songho.ca/opengl/gl_transform.html#wincoord
+// world to screen
+static 
+w2s(vec4 r, mat4x4 mvp, vec4 p) {
+    mat4x4_mul_vec4(r, mvp, p); 
+    r[0]=(r[0]/r[3]+1.0)*width /2.0; 
+    r[1]=(1.0-r[1]/r[3])*height/2.0; 
+    r[2]/=r[3];
+}
+
+
+// screen to vec
+// https://stackoverflow.com/questions/7692988/opengl-math-projecting-screen-space-to-world-space-coords
+static
+s2w(vec4 r, mat4x4 mvp, vec4 p) {
+   p[0] = p[0]/width*2.0-1.0;
+   p[1] = 1.0-p[1]/height*2.0;
+   p[2] = 1.0;
+   p[3] = 1.0;
+   mat4x4 mvp_i;
+   mat4x4_invert(mvp_i, mvp);
+   mat4x4_mul_vec4(r, mvp_i, p);
+   // r[0]/=r[3];
+   // r[1]/=r[3];
+   // r[2]*=r[3]; 
 }
 
 void
@@ -237,15 +301,9 @@ draw_markers(scene_t* scene) {
         0xAFFFFFFF, data->header[gui_col_id], NULL);
 }
 
-// https://www.songho.ca/opengl/gl_transform.html#wincoord
-static w2s(vec4 r, mat4x4 mvp, vec4 p) {
-    mat4x4_mul_vec4(r, mvp, p); 
-    r[0]=(r[0]/r[3]+1.0)*width /2.0; 
-    r[1]=(1.0-r[1]/r[3])*height/2.0; 
-    r[2]=r[2]/r[3];
-}
 
-static char* format_float(const char* format, float f) {
+static char* 
+format_float(const char* format, float f) {
     static char tmp[128];
     char src[128];
     sprintf(src, format, f);
@@ -270,14 +328,16 @@ static char* format_float(const char* format, float f) {
     return d;
 }
 
-void gui_render(){
+void
+gui_render(){
     igRender();
     ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
     // ImGui_ImplOpenGL3_RenderDrawData(idd);
 };
 
 
-void gui_terminate(){
+void
+gui_terminate(){
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     igDestroyContext(ctx);
