@@ -212,16 +212,23 @@ draw_axis(scene_t* scene) {
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){pz[0], pz[1]}, 0x7F0000FF,1.0);
 
     // cursor screen, cursor world
-    vec4 cs, cw, ms, mw;
+    vec4 cs, cw,   // click screen/world  
+         ms, mw,   // mouse screen/world
+         rs, rw;   // rotation vector screen/world
+         
     cs[0] = click_x;
     cs[1] = click_y;
     ms[0] = mouse_x;
     ms[1] = mouse_y;
-    
+
     s2w(cw, scene->mvp, cs);
     w2s(cs, scene->mvp, cw);
     s2w(mw, scene->mvp, ms);
     w2s(ms, scene->mvp, mw);
+
+    vec4_mul_cross(rw, mw, cw);
+    vec4_scale(rw, rw, 10.0);
+    w2s(rs, scene->mvp, rw);
     
     ImDrawList_AddLine(idl, 
         (ImVec2) {ms[0], ms[1]}, 
@@ -235,6 +242,11 @@ draw_axis(scene_t* scene) {
     
     ImDrawList_AddLine(idl, 
         (ImVec2) {ms[0], ms[1]}, 
+        (ImVec2) {p0[0], p0[1]}, 
+        0x7F7F7F7F, 1.0);
+    
+    ImDrawList_AddLine(idl, 
+        (ImVec2) {rs[0], rs[1]}, 
         (ImVec2) {p0[0], p0[1]}, 
         0x7F7F7F7F, 1.0);
     
