@@ -3,10 +3,10 @@
 typedef struct GLFWwindow GLFWwindow;
 void interactive_init(GLFWwindow* win);
 
-char draging;
+char int_dragging;
 
-int mouse_x;
-int mouse_y;
+int int_mouse_x;
+int int_mouse_y;
 
-int click_x;
-int click_y;
+int int_click_x;
+int int_click_y;

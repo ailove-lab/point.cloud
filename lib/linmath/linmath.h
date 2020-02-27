@@ -633,14 +633,15 @@ static void vec4_project(vec4 r, mat4x4 mvp, vec4 p, float w, float h) {
 static void vec4_unproject(vec4 r, mat4x4 mvp, vec4 p, float w, float h) {
    p[0] = p[0]/w*2.0 - 1.0;
    p[1] = 1.0 -	p[1]/h*2.0;
-   p[2] = 1.0;
+   p[2] = 0.9;
    p[3] = 1.0;
    mat4x4 mvp_i;
    mat4x4_invert(mvp_i, mvp);
    mat4x4_mul_vec4(r, mvp_i, p);
-   // r[0]/=r[3];
-   // r[1]/=r[3];
-   // r[2]*=r[3]; 
+   r[0]/=r[3];
+   r[1]/=r[3];
+   r[2]/=r[3];
+   r[3]/=r[3];
 }
 
 #endif

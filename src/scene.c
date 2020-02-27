@@ -13,7 +13,7 @@ scene_ctor() {
     kv_init(scene->objects);
     scene->fov = 30.0;
     scene->f = 100.0;
-    scene->n = 0.001;
+    scene->n = 1.0;
     shader = shader_ctor("simple");
     obj_p o = obj_cloud();
     scene_add_obj(scene, o);

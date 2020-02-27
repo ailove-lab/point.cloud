@@ -7,7 +7,7 @@ static void cursor_position_callback(GLFWwindow* win, double xpos, double ypos);
 static void mouse_button_callback   (GLFWwindow* win, int button, int action, int mods);
 static void mouse_scroll_callback   (GLFWwindow* win, double xoffset, double yoffset);
 
-char draging = 0;
+char int_dragging = 0;
 
 void 
 interactive_init(GLFWwindow* win) {
@@ -16,6 +16,7 @@ interactive_init(GLFWwindow* win) {
     glfwSetMouseButtonCallback(win, mouse_button_callback);
     glfwSetScrollCallback     (win, mouse_scroll_callback);
 }
+
 
 static void 
 key_callback(
@@ -27,6 +28,7 @@ key_callback(
     // printf("key %d\n", key);
 }
 
+
 static void 
 cursor_position_callback(
     GLFWwindow* win, 
@@ -34,11 +36,13 @@ cursor_position_callback(
     double ypos) {
     
     static double old_xpos;
-    static double old_ypos; 
-    mouse_x = xpos;
-    mouse_y = ypos;
+    static double old_ypos;
+
+    int_mouse_x = xpos;
+    int_mouse_y = ypos;
+    
     if(!gui_focused) { 
-        if(draging) {
+        if(int_dragging) {
             gui_camera_rx -= (old_ypos-ypos)*0.1;
             gui_camera_ry -= (old_xpos-xpos)*0.1;
             // printf("ms %d %d\n", xpos, ypos);
@@ -64,16 +68,16 @@ mouse_button_callback(
         
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         if (action == GLFW_PRESS && !gui_focused) {
-            printf("Press\n");
-            draging = 1;
-            click_x = mouse_x;
-            click_y = mouse_y;
-        } else if (action == GLFW_RELEASE && draging) {
-            printf("Release\n"); 
-            draging = 0;
+            int_dragging = 1;
+            int_click_x = int_mouse_x;
+            int_click_y = int_mouse_y;
+        }
+        if (action == GLFW_RELEASE && int_dragging) {
+            int_dragging = 0;
         }
     }
 }
+
 
 static void 
 mouse_scroll_callback(
