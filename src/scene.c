@@ -11,9 +11,10 @@ scene_p
 scene_ctor() {
     scene_p scene = calloc(1, sizeof(scene_t));
     kv_init(scene->objects);
-    scene->fov = 30.0;
+    scene->fov = 60.0/180.0*3.14159;
     scene->f = 100.0;
-    scene->n = 1.0;
+    scene->n =   1.0;
+    mat4x4_identity(scene->m);
     shader = shader_ctor("simple");
     obj_p o = obj_cloud();
     scene_add_obj(scene, o);
@@ -39,35 +40,42 @@ scene_add_obj(scene_p scene, obj_p obj) {
 void 
 scene_render(scene_p scene) {
 
-    static float alpha = 0.0, betta=0.0;
-    alpha+=1.0;
-    betta+=0.01;
+    static vec3 cam_pos = {80.0, 0.0, 0.0};
+    static vec3 look_at = { 0.0, 0.0, 0.0};
+    static vec3 cam_up  = { 0.0, 1.0, 0.0};
 
-    float x = gui_camera_radius*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
-    float z = gui_camera_radius*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
-    float y = gui_camera_radius*cos(gui_camera_rx/57.3);
-
-    vec4 v = {10.0, 0.0, 0.0, 0.0};
+    // quat q;
+    // quat_rotate(q, M_PI/900.0, (vec3){0.0,0.0,1.0});
+    // quat_mul_vec3(cam_pos, q, cam_pos);
+    // char buf[256] = {0};
+    // vec4_sprint(buf            , "      q", q);
+    // vec3_sprint(buf+strlen(buf), "cam_pos", cam_pos);
+    // printf(buf); 
    
     mat4x4_perspective(scene->p, scene->fov, ratio, scene->n, scene->f);
-    // mat4x4_perspective(scene->p, 30, 1.0, 0.0001, 1000.0);
-    mat4x4_look_at(scene->v, 
-    	(vec3){x, y, z}, 
-    	(vec3){0.0, 0.0, 0.0},
-    	(vec3){0.0, 1.0, 0.0});
+    mat4x4_look_at(scene->v, cam_pos, look_at, cam_up);
+
+    static mat4x4 m; 
+    if(int_dragging_stoped) {
+       mat4x4_mul(scene->m, scene->m, m);
+    }
+    mat4x4_identity(m);
+    if (int_dragging) {
+        float w2 = screen_width /2.0;
+        float h2 = screen_height/2.0;
+        vec2 a = { int_click[0]/w2 - 1.0, 1.0 - int_click[1]/h2 };         
+        vec2 b = { int_mouse[0]/w2 - 1.0, 1.0 - int_mouse[1]/h2 };
+        mat4x4_arcball(m, m, a, b, 1.0);
+    }
 
     shader_start(shader);
     for(size_t i=0; i<scene->objects.n; i++) {
         
         obj_p o = scene->objects.a[i];
-        
+         
         mat4x4_mul(scene->mvp, scene->p, scene->v);
-        mat4x4_identity(scene->rot);
-        mat4x4_rotate_U(scene->rot, scene->rot, gui_rot_u);
-        // mat4x4_rotate_V(rot, rot, gui_rot_v);
-        
-        // mat4x4_mul(mvp, mvp, o->m);
-        // print_mat("mvp", mvp);
+        mat4x4_mul(scene->mvp, scene->mvp, scene->m); 
+        mat4x4_mul(scene->mvp, scene->mvp, m);
 
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) scene->mvp);
         glUniformMatrix4fv(shader->rot, 1, GL_FALSE, (const GLfloat*) scene->rot);

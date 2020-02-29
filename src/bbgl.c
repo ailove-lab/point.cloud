@@ -63,7 +63,7 @@ void bbgl_loop() {
     while (!glfwWindowShouldClose(win)) {
         /* Input */
         glfwPollEvents();
-        
+        interactive_update();        
         gui_update(scene);
 
         /* Draw */

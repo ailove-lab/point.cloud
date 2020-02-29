@@ -29,8 +29,8 @@ float gui_camera_rx = 30.0;
 float gui_camera_ry = 30.0;
 
 float gui_off_u = 10.0;
-float gui_rot_u = 0.0;
-float gui_rot_v = 0.0;
+float gui_rot_u =  0.0;
+float gui_rot_v =  0.0;
 
 float gui_point_size = 1.0;
 float gui_alpha_1    = 0.10;
@@ -191,7 +191,9 @@ columns_window() {
 
 void
 draw_axis(scene_t* scene) {
+
     ImDrawList* idl = igGetBackgroundDrawList();
+    
     float s = 10.0;
     vec4 w0 = {   0.0,   0.0,   0.0, 1.0}; 
     vec4 wx = {     s,   0.0,   0.0, 1.0};
@@ -213,50 +215,46 @@ draw_axis(scene_t* scene) {
         cs, cw,   // click screen/world  
         ms, mw,   // mouse screen/world
         rs, rw;   // rotation vector screen/world
-         
-    ms[0] = int_mouse_x;
-    ms[1] = int_mouse_y;
-    
-    static int old_dragging = 0;
-    static mat4x4 click_mvp;
-    if(int_dragging && int_dragging!=old_dragging) {
-        cs[0] = int_click_x;
-        cs[1] = int_click_y;
-        mat4x4_dup(click_mvp, scene->mvp);
-        printf("%.2f %.2f >> ", cs[0], cs[1]);
-        vec4_unproject(cw, scene->mvp, cs, screen_width, screen_height);
-        printf("%.2f %.2f %.2f >> ", cs[0], cs[1], cs[2]);
-        printf("%.2f %.2f %.2f %.2f\n ", cw[0], cw[1], cw[2], cw[3]);    
-    }
-    old_dragging = int_dragging;
 
-    vec4_project  (cs, scene->mvp, cw, screen_width, screen_height);
+    static mat4x4 click_mvp;
+    if(int_dragging_started) {
+        mat4x4_dup(click_mvp, scene->mvp);
+        vec4_dup(cs, int_click);
+        cs[2] = 0.0;
+        vec4_unproject(cw, scene->mvp, cs, screen_width, screen_height);
+    }
+    vec4_project(cs, click_mvp, cw, screen_width, screen_height);
+
+    vec4_dup(ms, int_mouse);
+    ms[2]=0.0;
     vec4_unproject(mw, scene->mvp, ms, screen_width, screen_height);
-    vec4_project  (ms, scene->mvp, mw, screen_width, screen_height);
+    vec4_project(ms, scene->mvp, mw, screen_width, screen_height);
 
     vec4_mul_cross(rw, mw, cw);
-    vec4_scale(rw, rw, 10.0);
-    vec4_project(rs, scene->mvp, rw, screen_width, screen_height);
+    vec4_norm(rw, rw);
     
-    // ImDrawList_AddLine(idl, 
-    //     (ImVec2) {ms[0], ms[1]}, 
-    //     (ImVec2) {cs[0], cs[1]}, 
-    //     0x7F7F7F7F, 1.0);
+    //vec4_scale(rw, rw, 10.0);
+    vec4_project(rs,scene->mvp, rw, screen_width, screen_height);
+
+    ImDrawList_AddLine(idl, 
+        (ImVec2) {ms[0], ms[1]}, 
+        (ImVec2) {cs[0], cs[1]}, 
+        0x7F7F7F7F, 1.0);
     
     ImDrawList_AddLine(idl, 
         (ImVec2) {p0[0], p0[1]}, 
         (ImVec2) {cs[0], cs[1]}, 
         0x7F7F7F7F, 1.0);
     
-    // ImDrawList_AddLine(idl, 
-    //     (ImVec2) {ms[0], ms[1]}, 
-    //     (ImVec2) {p0[0], p0[1]}, 
-    //     0x7F7F7F7F, 1.0);
-    
-    // ImDrawList_AddLine(idl, 
-    //     (ImVec2) {rs[0], rs[1]}, 
-    //     (ImVec2) {p0[0], p0[1]}, 
-    //     0x7F7F7F7F, 1.0);
+    ImDrawList_AddLine(idl, 
+        (ImVec2) {p0[0], p0[1]}, 
+        (ImVec2) {ms[0], ms[1]}, 
+        0x7F7F7F7F, 1.0);
+
+    ImDrawList_AddLine(idl, 
+        (ImVec2) {p0[0], p0[1]}, 
+        (ImVec2) {rs[0], rs[1]}, 
+        0x7F7F7F7F, 1.0);
     
 }
 

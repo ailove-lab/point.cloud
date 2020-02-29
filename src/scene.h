@@ -11,7 +11,7 @@ typedef struct scene_t {
     objects_v objects;
     mat4x4 mvp;
     mat4x4 rot;
-    mat4x4 p,v;
+    mat4x4 m,p,v;
     float n,f; // near far
     float fov;
 } scene_t;

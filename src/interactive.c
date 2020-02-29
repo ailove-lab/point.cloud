@@ -2,12 +2,15 @@
 #include "interactive.h"
 #include "gui.h"
 
+int int_dragging = 0;
+int int_dragging_started = 0;
+int int_dragging_stoped = 0;
+
 static void key_callback            (GLFWwindow* win, int key, int scancode, int action, int mods);
 static void cursor_position_callback(GLFWwindow* win, double xpos, double ypos);
 static void mouse_button_callback   (GLFWwindow* win, int button, int action, int mods);
 static void mouse_scroll_callback   (GLFWwindow* win, double xoffset, double yoffset);
 
-char int_dragging = 0;
 
 void 
 interactive_init(GLFWwindow* win) {
@@ -17,6 +20,12 @@ interactive_init(GLFWwindow* win) {
     glfwSetScrollCallback     (win, mouse_scroll_callback);
 }
 
+void interactive_update() {
+    static int old_dragging = 0;
+    int_dragging_started =  int_dragging && int_dragging!=old_dragging;
+    int_dragging_stoped  = !int_dragging && int_dragging!=old_dragging; 
+    old_dragging = int_dragging;
+}
 
 static void 
 key_callback(
@@ -35,27 +44,10 @@ cursor_position_callback(
     double xpos, 
     double ypos) {
     
-    static double old_xpos;
-    static double old_ypos;
+    static vec4 old_pos;
 
-    int_mouse_x = xpos;
-    int_mouse_y = ypos;
-    
-    if(!gui_focused) { 
-        if(int_dragging) {
-            gui_camera_rx -= (old_ypos-ypos)*0.1;
-            gui_camera_ry -= (old_xpos-xpos)*0.1;
-            // printf("ms %d %d\n", xpos, ypos);
-        } 
-
-        // else if(glfwGetMouseButton(win, 1) == GLFW_PRESS) {
-        //     gui_rot_u -= (old_xpos-xpos)*0.01;
-        //     // gui_rot_v -= (old_ypos-ypos)*0.01;
-        //     gui_off_u -= (old_ypos-ypos)*0.1;        
-        // }
-    }
-    old_xpos = xpos;
-    old_ypos = ypos;
+    vec4_set(int_mouse, xpos, ypos, 0.0, 1.0);    
+    vec4_dup(old_pos, int_mouse);
 }
 
 
@@ -69,8 +61,7 @@ mouse_button_callback(
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         if (action == GLFW_PRESS && !gui_focused) {
             int_dragging = 1;
-            int_click_x = int_mouse_x;
-            int_click_y = int_mouse_y;
+            vec4_dup(int_click, int_mouse);
         }
         if (action == GLFW_RELEASE && int_dragging) {
             int_dragging = 0;

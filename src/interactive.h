@@ -1,12 +1,13 @@
 #pragma once
 
+#include <linmath.h>
+
 typedef struct GLFWwindow GLFWwindow;
 void interactive_init(GLFWwindow* win);
 
-char int_dragging;
+int int_dragging;
+int int_dragging_started;
+int int_dragging_stoped;
 
-int int_mouse_x;
-int int_mouse_y;
-
-int int_click_x;
-int int_click_y;
+vec4 int_mouse;
+vec4 int_click;
