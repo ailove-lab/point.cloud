@@ -15,6 +15,7 @@ scene_ctor() {
     scene->f = 100.0;
     scene->n =   1.0;
     mat4x4_identity(scene->m);
+    mat4x4_identity(scene->r);
     shader = shader_ctor("simple");
     obj_p o = obj_cloud();
     scene_add_obj(scene, o);
@@ -46,50 +47,42 @@ scene_render(scene_p scene) {
     static vec3 look_at = { 0.0, 0.0, 0.0};
     static vec3 cam_up  = { 0.0, 1.0, 0.0};
 
-    // quat q;
-    // quat_rotate(q, M_PI/900.0, (vec3){0.0,0.0,1.0});
-    // quat_mul_vec3(cam_pos, q, cam_pos);
-    // char buf[256] = {0};
-    // vec4_sprint(buf            , "      q", q);
-    // vec3_sprint(buf+strlen(buf), "cam_pos", cam_pos);
-    // printf(buf); 
-   
     mat4x4_perspective(scene->p, scene->fov, ratio, scene->n, scene->f);
     mat4x4_look_at(scene->v, cam_pos, look_at, cam_up);
-
+    mat4x4_mul(scene->vp, scene->p, scene->v);
+        
     shader_start(shader);
     for(size_t i=0; i<scene->objects.n; i++) {
         
         obj_p o = scene->objects.a[i];
          
-        mat4x4_mul(scene->vp, scene->p,   scene->v);
-        static mat4x4 r, mvp;
+        
+        if(int_dragging_started) {
+            mat4x4_identity(scene->r);
+        }
         
         if(int_dragging_stoped) {
-            mat4x4_mul(o->m, o->m, r); 
-            mat4x4_identity(r);
+            mat4x4_mul(scene->m, scene->m, scene->r);
         }
+
+        mat4x4 mvp;
+        mat4x4_identity(mvp);
+        mat4x4_mul(mvp, scene->vp, scene->m);
         
         if (int_dragging) {
-
-            mat4x4_identity(r);
-            // center
+            
             float w2 = screen_width /2.0;
             float h2 = screen_height/2.0;
-            vec3 a = { int_click[0]/w2 - 1.0, 1.0 - int_click[1]/h2, 0.0};         
-            vec3 b = { int_mouse[0]/w2 - 1.0, 1.0 - int_mouse[1]/h2, 0.0};
+            vec3 a = { int_click[0]/w2 - 1.0, 1.0 - int_click[1]/h2, 0.0 };         
+            vec3 b = { int_mouse[0]/w2 - 1.0, 1.0 - int_mouse[1]/h2, 0.0 };
             if (vec3_len(a)<1.0) a[2] = sqrtf(1.0-vec3_mul_inner(a,a)); else vec3_norm(a,a);
             if (vec3_len(b)<1.0) b[2] = sqrtf(1.0-vec3_mul_inner(b,b)); else vec3_norm(b,b);
-
-            vec3_mul_cross(rotate_axis, a, b);
-             
-        	float const angle = acos(vec3_mul_inner(a, b));
-            quat q; quat_rotate(q, angle, rotate_axis);
-            quat_mul_vec3(cam_pos, q, cam_pos);
+            mat4x4_arcball(mvp, mvp, a, b, 1.0);
+            //mat4x4_mul(mvp, mvp, scene->r);
         }
-
-        mat4x4_mul(mvp, scene->vp, o->m);
-      
+        
+        mat4x4_mul(mvp, mvp, o->m);
+        
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) mvp);
         glUniform1f(shader->off,        (const GLfloat) gui_off_u);
         glUniform1f(shader->min,        (const GLfloat) gui_min);
