@@ -188,11 +188,15 @@ columns_window() {
     igEnd();
 }
 
+extern vec3 rotate_axis;
 
 void
 draw_axis(scene_t* scene) {
 
     ImDrawList* idl = igGetBackgroundDrawList();
+    
+    float w = screen_width;
+    float h = screen_height;
     
     float s = 10.0;
     vec4 w0 = {   0.0,   0.0,   0.0, 1.0}; 
@@ -201,14 +205,17 @@ draw_axis(scene_t* scene) {
     vec4 wz = {   0.0,   0.0,     s, 1.0};
     
     vec4 p0, px, py, pz;
-    vec4_project(p0, scene->mvp, w0, screen_width, screen_height);
-    vec4_project(px, scene->mvp, wx, screen_width, screen_height);
-    vec4_project(py, scene->mvp, wy, screen_width, screen_height);
-    vec4_project(pz, scene->mvp, wz, screen_width, screen_height);
+    vec4_project(p0, scene->vp, w0, w, h);
+    vec4_project(px, scene->vp, wx, w, h);
+    vec4_project(py, scene->vp, wy, w, h);
+    vec4_project(pz, scene->vp, wz, w, h);
 
-    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){px[0], px[1]}, 0x7FFF0000,1.0);
-    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){py[0], py[1]}, 0x7F00FF00,1.0);
-    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){pz[0], pz[1]}, 0x7F0000FF,1.0);
+    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){px[0], px[1]}, 0xFFFF0000,1.0);
+    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){py[0], py[1]}, 0xFF00FF00,1.0);
+    ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){pz[0], pz[1]}, 0xFF0000FF,1.0);
+    ImDrawList_AddText(idl, (ImVec2) {px[0], px[1]}, 0xFFFFFFFF, "x", NULL);
+    ImDrawList_AddText(idl, (ImVec2) {py[0], py[1]}, 0xFFFFFFFF, "y", NULL);
+    ImDrawList_AddText(idl, (ImVec2) {pz[0], pz[1]}, 0xFFFFFFFF, "z", NULL);
 
     // cursor screen, cursor world
     static vec4 
@@ -216,45 +223,53 @@ draw_axis(scene_t* scene) {
         ms, mw,   // mouse screen/world
         rs, rw;   // rotation vector screen/world
 
+    
     static mat4x4 click_mvp;
     if(int_dragging_started) {
-        mat4x4_dup(click_mvp, scene->mvp);
+        mat4x4_dup(click_mvp, scene->vp);
         vec4_dup(cs, int_click);
-        cs[2] = 0.0;
-        vec4_unproject(cw, scene->mvp, cs, screen_width, screen_height);
+        cs[2]=0.8;
+        vec4_unproject(cw, scene->vp, cs, w, h);
     }
-    vec4_project(cs, click_mvp, cw, screen_width, screen_height);
+    if (int_dragging) {
+        vec4_project(cs, click_mvp, cw, w, h);
+        vec4_dup(ms, int_mouse);
+        ms[2]=0.8;
+        vec4_unproject(mw, scene->vp, ms, w, h);
+        vec4_project(ms, scene->vp, mw, w, h);
 
-    vec4_dup(ms, int_mouse);
-    ms[2]=0.0;
-    vec4_unproject(mw, scene->mvp, ms, screen_width, screen_height);
-    vec4_project(ms, scene->mvp, mw, screen_width, screen_height);
+        vec4_mul_cross(rw, mw, cw);
+        vec4_norm(rw, rw);
+        
+        vec4_scale(rw, rw, 10.0);
+        vec4_project(rs,scene->vp, rw, w, h);
 
-    vec4_mul_cross(rw, mw, cw);
-    vec4_norm(rw, rw);
-    
-    //vec4_scale(rw, rw, 10.0);
-    vec4_project(rs,scene->mvp, rw, screen_width, screen_height);
+        ImDrawList_AddLine(idl, 
+            (ImVec2) {ms[0], ms[1]}, 
+            (ImVec2) {cs[0], cs[1]}, 
+            0x7F7F7F7F, 1.0);
+        
+        ImDrawList_AddLine(idl, 
+            (ImVec2) {p0[0], p0[1]}, 
+            (ImVec2) {cs[0], cs[1]}, 
+            0x7F7F7F7F, 1.0);
+        
+        ImDrawList_AddLine(idl, 
+            (ImVec2) {p0[0], p0[1]}, 
+            (ImVec2) {ms[0], ms[1]}, 
+            0x7F7F7F7F, 1.0);
 
-    ImDrawList_AddLine(idl, 
-        (ImVec2) {ms[0], ms[1]}, 
-        (ImVec2) {cs[0], cs[1]}, 
-        0x7F7F7F7F, 1.0);
-    
-    ImDrawList_AddLine(idl, 
-        (ImVec2) {p0[0], p0[1]}, 
-        (ImVec2) {cs[0], cs[1]}, 
-        0x7F7F7F7F, 1.0);
-    
-    ImDrawList_AddLine(idl, 
-        (ImVec2) {p0[0], p0[1]}, 
-        (ImVec2) {ms[0], ms[1]}, 
-        0x7F7F7F7F, 1.0);
+        ImDrawList_AddLine(idl, 
+            (ImVec2) {p0[0], p0[1]}, 
+            (ImVec2) {rs[0], rs[1]}, 
+            0x7F7F7F7F, 1.0);
 
-    ImDrawList_AddLine(idl, 
-        (ImVec2) {p0[0], p0[1]}, 
-        (ImVec2) {rs[0], rs[1]}, 
-        0x7F7F7F7F, 1.0);
+
+        ImDrawList_AddLine(idl, 
+            (ImVec2) {p0[0], p0[1]}, 
+            (ImVec2) {(rotate_axis[0]+1.0)/2.0*w, (1.0-rotate_axis[1])/2.0*h}, 
+            0x7FFF7F7F, 3.0);
+    }
     
 }
 
@@ -266,7 +281,7 @@ draw_markers(scene_t* scene) {
     // sprintf(buf, "%04.2f %04.2f -> %04.2f %04.2f\n", p0[0], p0[1], px[0], px[1]);
     mat4x4_print(buf, "p", scene->p);
     mat4x4_print(buf, "v", scene->v);
-    mat4x4_print(buf, "mvp", scene->mvp);
+    mat4x4_print(buf, "mvp", scene->vp);
     ImDrawList_AddText(idl,(ImVec2){10,10},0xFFFFFFFF,buf,NULL);
     */
  
@@ -275,7 +290,7 @@ draw_markers(scene_t* scene) {
     float* max_row = &data->data[row*data->cols];
     vec4 pos = {max_row[0], max_row[1], max_row[2], 1.0};
     vec4 prj; 
-    vec4_project(prj, scene->mvp, pos, screen_width, screen_height);
+    vec4_project(prj, scene->vp, pos, screen_width, screen_height);
     ImVec2 c = {prj[0], prj[1]};
 
     float r = 20.0;

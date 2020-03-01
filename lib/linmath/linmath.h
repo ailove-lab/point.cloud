@@ -14,7 +14,7 @@
 typedef float vec##n[n]; \
 LINMATH_H_FUNC void vec##n##_dup(vec##n r, vec##n const a) \
 { \
-    memcpy(r,a,sizeof(a)); \
+    memcpy(r,a,sizeof(float)*n); \
 } \
 LINMATH_H_FUNC void vec##n##_add(vec##n r, vec##n const a, vec##n const b) \
 { \

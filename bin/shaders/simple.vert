@@ -1,7 +1,6 @@
 #version 330
 
 uniform mat4 mvp;
-uniform mat4 rot;
 uniform float off;
 uniform float min;
 uniform float max;
@@ -22,7 +21,6 @@ vec3 hsv2rgb(vec3 c) {
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-
 void main() {
     vec4 a = vec4(1.0, 0.0, 0.0, 0.5);
     vec4 b = vec4(0.0, 0.0, 1.0, 0.5);
@@ -37,6 +35,5 @@ void main() {
         out_col = vec4(hsv2rgb(vec3(k*0.75, 1.0, 1.0)), alpha_2);
     }
     gl_PointSize = point_size;
-    // gl_Position = mvp*(vec4(0.0, 0.0, 0.0, off)+rot*pos);
     gl_Position = mvp*vec4(pos.xyz, 1.0);
 }
