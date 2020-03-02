@@ -11,7 +11,7 @@
 
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
-#include <linmath.h>
+#include <cglm/cglm.h>
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
@@ -62,7 +62,7 @@ void gui_init(GLFWwindow* win) {
     
 }
 
-static w2s(vec4 r, mat4x4 mvp, vec4 p);
+static w2s(vec4 r, mat4 vp, vec4 p);
 
 data_p data;
 
@@ -193,11 +193,11 @@ draw_axis(scene_t* scene) {
     vec4 wy = {   0.0,     s,   0.0, 1.0};
     vec4 wz = {   0.0,   0.0,     s, 1.0};
     
-    vec4 p0, px, py, pz;
-    w2s(p0, scene->mvp, w0);
-    w2s(px, scene->mvp, wx);
-    w2s(py, scene->mvp, wy);
-    w2s(pz, scene->mvp, wz);
+    vec4 p0, px, py, pz;    
+    w2s(w0, scene->mvp, p0);
+    w2s(wx, scene->mvp, px);
+    w2s(wy, scene->mvp, py);
+    w2s(wz, scene->mvp, pz);
 
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){px[0], px[1]}, 0x7FFF0000,1.0);
     ImDrawList_AddLine(idl, (ImVec2) {p0[0], p0[1]}, (ImVec2){py[0], py[1]}, 0x7F00FF00,1.0);
@@ -207,20 +207,15 @@ draw_axis(scene_t* scene) {
 void
 draw_markers(scene_t* scene) {
     char buf[2048]={0}; 
-    /* 
-    // sprintf(buf, "%04.2f %04.2f -> %04.2f %04.2f\n", p0[0], p0[1], px[0], px[1]);
-    mat4x4_print(buf, "p", scene->p);
-    mat4x4_print(buf, "v", scene->v);
-    mat4x4_print(buf, "mvp", scene->mvp);
-    ImDrawList_AddText(idl,(ImVec2){10,10},0xFFFFFFFF,buf,NULL);
-    */
- 
+
     ImDrawList* idl = igGetBackgroundDrawList();
     unsigned int row = data->max_id[gui_col_id];
     float* max_row = &data->data[row*data->cols];
     vec4 pos = {max_row[0], max_row[1], max_row[2], 1.0};
     vec4 prj; 
-    w2s(prj, scene->mvp, pos);
+    // w2s(prj, scene->mvp, pos);
+    w2s(pos, scene->mvp, prj);
+    
     ImVec2 c = {prj[0], prj[1]};
 
     float r = 20.0;
@@ -238,11 +233,10 @@ draw_markers(scene_t* scene) {
 }
 
 // https://www.songho.ca/opengl/gl_transform.html#wincoord
-static w2s(vec4 r, mat4x4 mvp, vec4 p) {
-    mat4x4_mul_vec4(r, mvp, p); 
-    r[0]=(r[0]/r[3]+1.0)*width /2.0; 
-    r[1]=(1.0-r[1]/r[3])*height/2.0; 
-    r[2]=r[2]/r[3];
+static w2s(vec4 in, mat4 mvp, vec4 out) {
+    vec4 vp = {0.0, 0.0, screen_width, screen_height };
+    glm_project(in, mvp, vp, out);
+    out[1] =screen_height - out[1];
 }
 
 static char* format_float(const char* format, float f) {

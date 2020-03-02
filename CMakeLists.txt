@@ -20,6 +20,7 @@ set(imgui_impl ${cimgui}/imgui/examples)
 set(gl3w lib/gl3w)
 set(klib lib/klib)
 set(linmath lib/linmath/)
+set(cglm lib/cglm)
 
 # library search path
 set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig")
@@ -36,6 +37,7 @@ include_directories(
 	${cimgui}/imgui ${imgui_impl}
     ${gl3w}
     ${klib}
+	${cglm}/include
     ${linmath})
 
 file(GLOB source_files "src/*.c")

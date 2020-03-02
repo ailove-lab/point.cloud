@@ -24,7 +24,7 @@ static void error_callback(int e, const char *d)
 
 /* Platform */
 static GLFWwindow *win;
-int width = 0, height = 0;
+int screen_width = 0, screen_height = 0;
 scene_p scene;
 
 void bbgl_init() {
@@ -42,7 +42,7 @@ void bbgl_init() {
 
     glfwMakeContextCurrent(win);
     gl3wInit();
-    glfwGetWindowSize(win, &width, &height);
+    glfwGetWindowSize(win, &screen_width, &screen_height);
 
     /* OpenGL */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -67,9 +67,9 @@ void bbgl_loop() {
         gui_update(scene);
 
         /* Draw */
-        glfwGetWindowSize(win, &width, &height);
-        ratio = (float)width/(float)height;
-        glViewport(0, 0, width, height);
+        glfwGetWindowSize(win, &screen_width, &screen_height);
+        ratio = (float)screen_width/(float)screen_height;
+        glViewport(0, 0, screen_width, screen_height);
         glClear(GL_COLOR_BUFFER_BIT);
         glClearColor(0.0, 0.0, 0.0, 0.0);
         

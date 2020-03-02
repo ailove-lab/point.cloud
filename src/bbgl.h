@@ -1,7 +1,7 @@
 #pragma once
 
-int width;
-int height;
+int screen_width;
+int screen_height;
 float ratio;
 
 void bbgl_init();

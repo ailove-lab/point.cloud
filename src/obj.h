@@ -1,12 +1,12 @@
 #pragma once
 
 #include <GL/gl3w.h>
-#include <linmath.h>
+#include <cglm/cglm.h>
 
 typedef struct obj_t {
     GLuint vao;
     GLuint vbo;
-    mat4x4 m;
+    mat4 m;
     size_t cols;
     size_t rows;
     

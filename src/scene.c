@@ -39,36 +39,27 @@ scene_add_obj(scene_p scene, obj_p obj) {
 void 
 scene_render(scene_p scene) {
 
-    static float alpha = 0.0, betta=0.0;
-    alpha+=1.0;
-    betta+=0.01;
-
     float x = gui_camera_radius*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
     float z = gui_camera_radius*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
     float y = gui_camera_radius*cos(gui_camera_rx/57.3);
 
-    mat4x4_perspective(scene->p, scene->fov, ratio, scene->n, scene->f);
-    // mat4x4_perspective(scene->p, 30, 1.0, 0.0001, 1000.0);
-    mat4x4_look_at(scene->v, 
+    glm_perspective(scene->fov, ratio, scene->n, scene->f, scene->p);
+    glm_lookat(
     	(vec3){  x,   y,   z}, 
     	(vec3){0.0, 0.0, 0.0},
-    	(vec3){0.0, 1.0, 0.0});
+    	(vec3){0.0, 1.0, 0.0},
+        scene->v);
 
     shader_start(shader);
     for(size_t i=0; i<scene->objects.n; i++) {
         
         obj_p o = scene->objects.a[i];
         
-        mat4x4_mul(scene->mvp, scene->p, scene->v);
-        mat4x4_identity(scene->rot);
-        mat4x4_rotate_U(scene->rot, scene->rot, gui_rot_u);
-        // mat4x4_rotate_V(rot, rot, gui_rot_v);
-        
-        // mat4x4_mul(mvp, mvp, o->m);
-        // print_mat("mvp", mvp);
+        glm_mat4_mul(scene->p, scene->v, scene->mvp);
+        glm_mat4_identity(scene->rot);
 
         glUniformMatrix4fv(shader->mvp, 1, GL_FALSE, (const GLfloat*) scene->mvp);
-        glUniformMatrix4fv(shader->rot, 1, GL_FALSE, (const GLfloat*) scene->rot);
+        // glUniformMatrix4fv(shader->rot, 1, GL_FALSE, (const GLfloat*) scene->rot);
         glUniform1f(shader->off,        (const GLfloat) gui_off_u);
         glUniform1f(shader->min,        (const GLfloat) gui_min);
         glUniform1f(shader->max,        (const GLfloat) gui_max);

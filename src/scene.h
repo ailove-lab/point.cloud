@@ -1,7 +1,7 @@
 #pragma once
 
 #include <kvec.h>
-#include <linmath.h>
+#include <cglm/cglm.h>
 
 #include "obj.h"
 
@@ -9,9 +9,9 @@ typedef kvec_t(obj_p) objects_v;
 
 typedef struct scene_t {
     objects_v objects;
-    mat4x4 mvp;
-    mat4x4 rot;
-    mat4x4 p,v;
+    mat4 mvp;
+    mat4 rot;
+    mat4 p,v;
     float n,f; // near far
     float fov;
 } scene_t;
