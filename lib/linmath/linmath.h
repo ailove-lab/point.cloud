@@ -664,4 +664,8 @@ LINMATH_H_FUNC void vec4_unproject(vec4 r, mat4x4 VP, vec4 p, float w, float h) 
    r[3]/=r[3];
 }
 
+LINMATH_H_FUNC void quat_printf(quat q) {
+   printf("[%.6f, %.6f, %.6f, %.6f]\n", q[0], q[1], q[2], q[3]); 
+}
+
 #endif
