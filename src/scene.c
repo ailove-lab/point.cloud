@@ -38,17 +38,28 @@ scene_add_obj(scene_p scene, obj_p obj) {
 
 void 
 scene_render(scene_p scene) {
-
-    float x = gui_camera_radius*sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
-    float z = gui_camera_radius*sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
-    float y = gui_camera_radius*cos(gui_camera_rx/57.3);
-
+    
+    
+    float x = gui_camera_radius * sin(gui_camera_rx/57.3)*sin(gui_camera_ry/57.3);
+    float z = gui_camera_radius * sin(gui_camera_rx/57.3)*cos(gui_camera_ry/57.3);
+    float y = gui_camera_radius * cos(gui_camera_rx/57.3);
+        
     glm_perspective(scene->fov, ratio, scene->n, scene->f, scene->p);
     glm_lookat(
     	(vec3){  x,   y,   z}, 
     	(vec3){0.0, 0.0, 0.0},
     	(vec3){0.0, 1.0, 0.0},
         scene->v);
+    // glm_translate_make(scene->v, (vec3){0,0,-40});
+    // vec3 eye = {  x,   y,   z}; 
+    // vec3  to = {0.0, 0.0, 0.0};
+    // versor q = {-x, -y, -z, 0.0};
+    // glm_quat_normalize(q);
+    // glm_quat_mat4t(q, scene->v);
+    // glm_mat4_mulv3(scene->v, eye, 1.0f, scene->v[3]);
+    // glm_vec3_negate(scene->v[3]);
+
+    //glm_quat_look(eye, q, scene->v);
 
     shader_start(shader);
     for(size_t i=0; i<scene->objects.n; i++) {
